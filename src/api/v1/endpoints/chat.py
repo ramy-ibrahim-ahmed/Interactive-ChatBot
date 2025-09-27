@@ -1,8 +1,8 @@
 from pydantic import BaseModel
 from fastapi import APIRouter, Request
-from ..store.nlp import NLPInterface
-from ..store.vectordb import VectorDBInterface
-from ..graph import init_workflow
+from ....store.nlp import NLPInterface
+from ....store.vectordb import VectorDBInterface
+from ....graph import init_workflow
 
 router = APIRouter(
     prefix="/chat",

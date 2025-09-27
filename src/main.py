@@ -5,7 +5,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from .core.config import get_settings
 from .store.vectordb import VectorDBFactory
 from .store.nlp import NLPFactory
-from .routes import chat_router, extract_router, process_router
+from .api import api_router_v1
 
 
 SETTINGS = get_settings()
@@ -28,7 +28,7 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(
     lifespan=lifespan,
-    title="onyx-helpbot API",
+    title="onyx API",
     version="0.1.0",
     contact={"email": "ramyibrahim.ai@gmail.com"},
 )
@@ -41,6 +41,4 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-app.include_router(chat_router)
-app.include_router(extract_router)
-app.include_router(process_router)
+app.include_router(api_router_v1, prefix="/api/v1")

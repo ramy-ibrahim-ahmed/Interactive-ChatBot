@@ -2,8 +2,8 @@ import io
 import logging
 from fastapi import APIRouter, Request, UploadFile, File, HTTPException
 from fastapi.responses import StreamingResponse
-from ..store.nlp import NLPInterface
-from ..services import MarkdownService
+from ....store.nlp import NLPInterface
+from ....services import MarkdownService
 
 
 logger = logging.getLogger(__name__)
