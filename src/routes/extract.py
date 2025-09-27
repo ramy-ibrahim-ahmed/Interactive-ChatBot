@@ -1,0 +1,44 @@
+import io
+import logging
+from fastapi import APIRouter, Request, UploadFile, File, HTTPException
+from fastapi.responses import StreamingResponse
+from ..store.nlp import NLPInterface
+from ..services import MarkdownService
+
+
+logger = logging.getLogger(__name__)
+
+router = APIRouter(
+    prefix="/data",
+    tags=["Data"],
+    responses={404: {"description": "Not found"}},
+)
+
+
+@router.post("/extract")
+async def convert_pdf_to_markdown(request: Request, pdf_file: UploadFile = File(...)):
+    if not pdf_file.filename.lower().endswith(".pdf"):
+        raise HTTPException(status_code=400, detail="File must be a PDF")
+
+    nlp_openai: NLPInterface = request.app.state.nlp_openai
+    settings = request.app.state.settings
+    service = MarkdownService(nlp_openai, settings)
+
+    try:
+        pdf_bytes = await pdf_file.read()
+        if not pdf_bytes:
+            raise HTTPException(status_code=400, detail="Empty PDF file")
+
+        md_content = service.process_pdf(pdf_bytes)
+        if not md_content:
+            raise HTTPException(
+                status_code=500, detail="Failed to generate Markdown content"
+            )
+
+        buffer = io.BytesIO(md_content.encode("utf-8"))
+        filename = pdf_file.filename.replace(".pdf", ".md")
+        headers = {"Content-Disposition": f"attachment; filename={filename}"}
+        return StreamingResponse(buffer, media_type="text/markdown", headers=headers)
+    except Exception as e:
+        logger.error(f"Error processing PDF: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Processing failed: {str(e)}")
