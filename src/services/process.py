@@ -56,6 +56,7 @@ class ProcessService:
         for topic_id, chunks in tqdm(
             enumerate(topics_chunks), total=len(topics_chunks), desc="uploading"
         ):
+            print(len(chunks))
             embeddings = self.nlp.embed(chunks.chunks)
             metadata = list()
             for text in chunks.chunks:

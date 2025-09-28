@@ -6,7 +6,7 @@ class OpenAIProvider(NLPInterface):
     def __init__(self, openai_client):
         self.openai_client = openai_client
 
-    def embed(self, list_of_text, batch_size=100, model_name="text-embedding-3-large"):
+    def embed(self, list_of_text, batch_size=1, model_name="text-embedding-3-large"):
         vectors = []
         for i in range(0, len(list_of_text), batch_size):
             batch = list_of_text[i : i + batch_size]

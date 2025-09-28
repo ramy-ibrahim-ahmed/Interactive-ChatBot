@@ -85,7 +85,7 @@ def analysis_node(state: State, nlp_openai: NLPInterface):
         {"role": OpenAIRolesEnum.ASSISTANT.value, "content": formated_search},
     ]
 
-    analysis = nlp_openai.chat(messages, "o4-mini")
+    analysis = nlp_openai.chat(messages, "gpt-4.1")
     return {"analysis": analysis}
 
 
