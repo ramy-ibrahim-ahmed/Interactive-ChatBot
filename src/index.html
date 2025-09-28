@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="ar" dir="ltr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Brhuma</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" />
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            overflow: hidden;
+        }
+
+        #chat-container::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        #chat-container::-webkit-scrollbar-track {
+            background: #f1f5f9;
+        }
+
+        #chat-container::-webkit-scrollbar-thumb {
+            background: #94a3b8;
+            border-radius: 4px;
+        }
+
+        #chat-container::-webkit-scrollbar-thumb:hover {
+            background: #64748b;
+        }
+
+        .chat-bubble-user {
+            background-color: #3b82f6;
+            color: white;
+        }
+
+        /* Persona idle animation */
+        @keyframes bob {
+
+            0%,
+            100% {
+                transform: translateY(0);
+            }
+
+            50% {
+                transform: translateY(-5px);
+            }
+        }
+
+        #persona-svg {
+            animation: bob 4s ease-in-out infinite;
+        }
+    </style>
+</head>
+
+<body class="bg-slate-100 h-screen w-screen overflow-hidden">
+
+    <div dir="ltr" class="bg-white w-full h-full flex flex-col md:flex-row overflow-hidden">
+
+        <!-- Persona Section -->
+        <div
+            class="w-full md:w-1/3 bg-slate-800 flex flex-col items-center justify-center p-8 border-b-4 border-slate-700 md:border-r-4 md:border-b-0">
+            <div class="w-48 h-48 md:w-64 md:h-64">
+                <svg id="persona-svg" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+                    <!-- Head -->
+                    <path id="head" fill="#475569"
+                        d="M 50,25 C 25,25 25,50 25,75 L 25,125 C 25,150 25,175 50,175 L 150,175 C 175,175 175,150 175,125 L 175,75 C 175,50 175,25 150,25 Z" />
+
+                    <!-- Eye background -->
+                    <rect x="55" y="60" width="90" height="40" rx="20" fill="#1e293b" />
+
+                    <!-- Eyes -->
+                    <g id="eyes">
+                        <circle id="left-eye" cx="80" cy="80" r="8" fill="#34d399" />
+                        <circle id="right-eye" cx="120" cy="80" r="8" fill="#34d399" />
+                    </g>
+
+                    <!-- Mouth -->
+                    <g id="mouth">
+                        <path d="M 80 125 Q 100 140 120 125" stroke="#34d399" stroke-width="4" fill="none"
+                            stroke-linecap="round" />
+                    </g>
+                </svg>
+            </div>
+            <div class="text-center mt-4">
+                <h2 id="persona-name" class="text-2xl font-bold text-white">برهوما</h2>
+                <p id="persona-status" class="text-emerald-400 font-medium">متصل</p>
+            </div>
+        </div>
+
+        <!-- Chat Section -->
+        <div class="w-full md:w-2/3 flex flex-col h-full">
+            <div class="flex-1 p-6 overflow-y-auto space-y-4" id="chat-container">
+                <!-- Chat messages will be appended here -->
+            </div>
+            <div class="p-4 bg-white border-t border-slate-200">
+                <form id="chat-form" class="flex items-end space-x-2">
+                    <textarea id="chat-input" rows="4" placeholder="اكتب سؤالك هنا..."
+                        class="flex-1 p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none transition resize-none text-right"
+                        dir="rtl" autocomplete="off"></textarea>
+                    <button type="button" id="mic-button"
+                        class="bg-green-500 hover:bg-green-600 text-white font-bold p-3 rounded-lg transition-transform duration-200 ease-in-out active:scale-95 flex items-center justify-center w-12 h-12">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"></path>
+                            <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
+                            <line x1="12" x2="12" y1="19" y2="22"></line>
+                        </svg>
+                    </button>
+                    <button type="submit" id="send-button"
+                        class="bg-blue-500 hover:bg-blue-600 text-white font-bold p-3 rounded-lg transition-transform duration-200 ease-in-out active:scale-95 flex items-center justify-center w-12 h-12">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                            class="feather feather-send">
+                            <line x1="22" y1="2" x2="11" y2="13"></line>
+                            <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+                        </svg>
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // DOM Elements
+        const chatContainer = document.getElementById('chat-container');
+        const chatForm = document.getElementById('chat-form');
+        const chatInput = document.getElementById('chat-input');
+        const personaStatus = document.getElementById('persona-status');
+        const eyes = document.getElementById('eyes');
+        const mouth = document.getElementById('mouth');
+        const sendButton = document.getElementById('send-button');
+        const micButton = document.getElementById('mic-button');
+
+        // Chat state
+        let isLoading = false;
+        let isRecording = false;
+        let mediaRecorder;
+        let audioChunks = [];
+        let lastUserMessage;
+        let isAudioInput = false;
+
+        // Backend URL
+        const backendUrl = '/api/v1/chat';
+
+        // RTL detection
+        function isRTL(text) {
+            const rtlChars = /[\u0590-\u05FF\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF\uFB50-\uFDFF\uFE70-\uFEFF]/;
+            return rtlChars.test(text);
+        }
+
+        // Persona animation state
+        let blinkInterval;
+
+        const personaStates = {
+            idle: {
+                mouth: '<path d="M 80 125 Q 100 140 120 125" stroke="#34d399" stroke-width="4" fill="none" stroke-linecap="round" />',
+                eyesOpen: '<circle id="left-eye" cx="80" cy="80" r="8" fill="#34d399" /><circle id="right-eye" cx="120" cy="80" r="8" fill="#34d399" />',
+                eyesClosed: '<path d="M 70 80 H 90" stroke="#34d399" stroke-width="4" fill="none" stroke-linecap="round" /><path d="M 110 80 H 130" stroke="#34d399" stroke-width="4" fill="none" stroke-linecap="round" />',
+                status: 'متصل',
+                statusColor: 'text-emerald-400'
+            },
+            thinking: {
+                mouth: '<path d="M 80 130 H 120" stroke="#f59e0b" stroke-width="4" fill="none" stroke-linecap="round" />',
+                eyes: '<circle id="left-eye" cx="80" cy="75" r="8" fill="#f59e0b" /><circle id="right-eye" cx="120" cy="75" r="8" fill="#f59e0b" />',
+                status: 'يفكر...',
+                statusColor: 'text-amber-400'
+            },
+            talking: {
+                mouth: [
+                    '<path d="M 80 125 Q 100 130 120 125" stroke="#60a5fa" stroke-width="4" fill="none" stroke-linecap="round" />',
+                    '<path d="M 80 125 Q 100 135 120 125" stroke="#60a5fa" stroke-width="4" fill="none" stroke-linecap="round" />',
+                    '<path d="M 80 125 Q 100 140 120 125" stroke="#60a5fa" stroke-width="4" fill="none" stroke-linecap="round" />'
+                ],
+                eyes: '<circle id="left-eye" cx="80" cy="80" r="9" fill="#60a5fa" /><circle id="right-eye" cx="120" cy="80" r="9" fill="#60a5fa" />',
+                status: 'يرد...',
+                statusColor: 'text-blue-400'
+            },
+            error: {
+                mouth: '<path d="M 80 135 Q 100 120 120 135" stroke="#f43f5e" stroke-width="4" fill="none" stroke-linecap="round" />',
+                eyes: '<path d="M 72 72 L 88 88 M 88 72 L 72 88" stroke="#f43f5e" stroke-width="4" fill="none" stroke-linecap="round" /><path d="M 112 72 L 128 88 M 128 72 L 112 88" stroke="#f43f5e" stroke-width="4" fill="none" stroke-linecap="round" />',
+                status: 'خطأ',
+                statusColor: 'text-red-500'
+            }
+        };
+
+        let talkInterval;
+
+        function setPersonaState(state) {
+            clearInterval(blinkInterval);
+            clearInterval(talkInterval);
+            const s = personaStates[state];
+
+            personaStatus.textContent = s.status;
+            personaStatus.className = `font-medium ${s.statusColor}`;
+
+            switch (state) {
+                case 'idle':
+                    mouth.innerHTML = s.mouth;
+                    eyes.innerHTML = s.eyesOpen;
+                    blinkInterval = setInterval(() => {
+                        eyes.innerHTML = s.eyesClosed;
+                        setTimeout(() => {
+                            if (personaStatus.textContent === 'متصل') {
+                                eyes.innerHTML = s.eyesOpen;
+                            }
+                        }, 200);
+                    }, 4000);
+                    break;
+                case 'thinking':
+                    mouth.innerHTML = s.mouth;
+                    eyes.innerHTML = s.eyes;
+                    break;
+                case 'talking':
+                    eyes.innerHTML = s.eyes;
+                    let mouthIndex = 0;
+                    talkInterval = setInterval(() => {
+                        mouth.innerHTML = s.mouth[mouthIndex];
+                        mouthIndex = (mouthIndex + 1) % s.mouth.length;
+                    }, 150);
+                    break;
+                case 'error':
+                    mouth.innerHTML = s.mouth;
+                    eyes.innerHTML = s.eyes;
+                    break;
+            }
+        }
+
+        function addMessageToChat(sender, message) {
+            const messageWrapper = document.createElement('div');
+            messageWrapper.classList.add('mb-4', 'w-full', 'animate__animated', 'animate__fadeIn');
+            if (sender === 'user') {
+                messageWrapper.classList.add('flex', 'justify-end');
+            } else {
+                messageWrapper.classList.add('flex', 'justify-start');
+            }
+
+            const messageElement = document.createElement('div');
+            messageElement.classList.add('px-4', 'py-3', 'break-words', 'rounded-lg', 'shadow-md', 'max-w-xs', 'lg:max-w-md');
+
+            if (sender === 'bot') {
+                messageElement.innerHTML = marked.parse(message);
+                messageElement.classList.add('bg-gray-200', 'text-gray-800');
+            } else {
+                messageElement.textContent = message;
+                messageElement.classList.add('chat-bubble-user');
+            }
+
+            const text = messageElement.textContent.trim();
+            if (isRTL(text)) {
+                messageElement.dir = 'rtl';
+                messageElement.classList.add('text-right');
+            } else {
+                messageElement.dir = 'ltr';
+                messageElement.classList.add('text-left');
+            }
+
+            messageWrapper.appendChild(messageElement);
+            chatContainer.appendChild(messageWrapper);
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+
+            if (sender === 'user') {
+                lastUserMessage = messageElement;
+            }
+        }
+
+        function updateLastUserMessage(text) {
+            if (lastUserMessage) {
+                lastUserMessage.textContent = text;
+                if (isRTL(text)) {
+                    lastUserMessage.dir = 'rtl';
+                    lastUserMessage.classList.remove('text-left');
+                    lastUserMessage.classList.add('text-right');
+                } else {
+                    lastUserMessage.dir = 'ltr';
+                    lastUserMessage.classList.remove('text-right');
+                    lastUserMessage.classList.add('text-left');
+                }
+            }
+        }
+
+        // Chatbot API call
+        async function callChatbotAPI(prompt = null, audioBlob = null) {
+            isLoading = true;
+            setPersonaState('thinking');
+            sendButton.disabled = true;
+            chatInput.disabled = true;
+            micButton.disabled = true;
+
+            try {
+                // Always use FormData
+                const formData = new FormData();
+
+                if (audioBlob) {
+                    formData.append('audio', audioBlob, 'recording.webm');
+                } else if (prompt) {
+                    formData.append('query', prompt);
+                }
+
+                const fetchOptions = {
+                    method: 'POST',
+                    body: formData // The body is always FormData
+                };
+
+                // Fetch response
+                const response = await fetch(backendUrl, fetchOptions);
+
+                if (!response.ok) {
+                    throw new Error(`API error: ${response.statusText}`);
+                }
+
+                const result = await response.json();
+
+                if (isAudioInput && result.user_message) {
+                    updateLastUserMessage(result.user_message);
+                }
+
+                const botResponse = result.answer;
+                const audioUrl = result.audio_path;
+
+                if (botResponse) {
+                    addMessageToChat('bot', botResponse);
+                    setPersonaState('talking');
+
+                    if (audioUrl) {
+                        const audio = new Audio(audioUrl);
+                        audio.play().catch(error => {
+                            console.error('Audio playback error:', error);
+                            setPersonaState('idle');
+                        });
+                        audio.onplaying = () => setPersonaState('talking');
+                        audio.onended = () => setPersonaState('idle');
+                        audio.onerror = () => setPersonaState('idle');
+                    } else {
+                        setTimeout(() => setPersonaState('idle'), 2000);
+                    }
+                } else {
+                    throw new Error("Invalid response from API");
+                }
+
+            } catch (error) {
+                console.error("Chatbot API Error:", error);
+                addMessageToChat('bot', 'عذرا، يبدو أنني أواجه بعض المشاكل الآن. يرجى المحاولة لاحقا.');
+                setPersonaState('error');
+                setTimeout(() => setPersonaState('idle'), 4000);
+            } finally {
+                isLoading = false;
+                sendButton.disabled = false;
+                chatInput.disabled = false;
+                micButton.disabled = false;
+                isAudioInput = false;
+                chatInput.focus();
+            }
+        }
+        // Text input submit
+        chatForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const userInput = chatInput.value.trim();
+            if (userInput && !isLoading) {
+                addMessageToChat('user', userInput);
+                chatInput.value = '';
+                callChatbotAPI(userInput);
+            }
+        });
+
+        // Audio input
+        micButton.addEventListener('click', async () => {
+            if (isLoading) return;
+
+            if (!isRecording) {
+                try {
+                    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                    mediaRecorder = new MediaRecorder(stream);
+                    audioChunks = [];
+                    mediaRecorder.ondataavailable = (e) => audioChunks.push(e.data);
+                    mediaRecorder.onstop = () => {
+                        const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+                        addMessageToChat('user', 'رسالة صوتية...');
+                        isAudioInput = true;
+                        callChatbotAPI(null, audioBlob);
+                    };
+                    mediaRecorder.start();
+                    isRecording = true;
+                    micButton.classList.remove('bg-green-500', 'hover:bg-green-600');
+                    micButton.classList.add('bg-red-500', 'hover:bg-red-600');
+                } catch (error) {
+                    console.error('Microphone access error:', error);
+                    alert('يرجى السماح بالوصول إلى الميكروفون.');
+                }
+            } else {
+                mediaRecorder.stop();
+                isRecording = false;
+                micButton.classList.remove('bg-red-500', 'hover:bg-red-600');
+                micButton.classList.add('bg-green-500', 'hover:bg-green-600');
+            }
+        });
+
+        // Initial welcome message
+        window.addEventListener('load', () => {
+            setPersonaState('idle');
+            setTimeout(() => {
+                addMessageToChat('bot', "مرحبا! أنا برهوما، جاهز للإجابة على أسئلتك. ما هو سؤالك؟");
+            }, 500);
+        });
+
+    </script>
+</body>
+
+</html>

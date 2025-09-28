@@ -2,6 +2,7 @@ import os
 from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 from .core.config import get_settings
 from .store.vectordb import VectorDBFactory
 from .store.nlp import NLPFactory
@@ -26,6 +27,8 @@ async def lifespan(app: FastAPI):
     vectordb.disconnect()
 
 
+# ... (imports and lifespan function) ...
+
 app = FastAPI(
     lifespan=lifespan,
     title="onyx API",
@@ -33,6 +36,7 @@ app = FastAPI(
     contact={"email": "ramyibrahim.ai@gmail.com"},
 )
 
+# Add Middleware
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -41,4 +45,12 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# 1. Register the API router FIRST
 app.include_router(api_router_v1, prefix="/api/v1")
+
+# 2. Mount static files AFTER the API router
+app.mount(
+    "/assets", StaticFiles(directory=os.path.join(BASE_DIR, "assets")), name="assets"
+)
+
+app.mount("/", StaticFiles(directory=BASE_DIR, html=True), name="root")

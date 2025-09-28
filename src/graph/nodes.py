@@ -13,7 +13,7 @@ def intent_node(state: State, nlp_openai: NLPInterface):
         {"role": OpenAIRolesEnum.SYSTEM.value, "content": intent_prompt},
         {"role": OpenAIRolesEnum.USER.value, "content": user_message},
     ]
-    intent = nlp_openai.chat(messages, "gpt-4.1-mini")
+    intent = nlp_openai.chat(messages, "gpt-4.1")
     return {"intent": intent}
 
 
@@ -68,7 +68,7 @@ def formate_node(state: State) -> State:
 
     search_as_list = list()
     for result in search_results.results:
-        search_as_list.append(f"Topic: {result.topic}\nText:\n{result.text}")
+        search_as_list.append(f"Topic: {result.topic}\nChunk Text:\n{result.text}")
 
     search_as_text = "\n\n---\n\n".join(search_as_list)
     return {"formated_search": search_as_text}
@@ -102,3 +102,14 @@ def chat_node(state: State, nlp_openai: NLPInterface) -> State:
 
     response = nlp_openai.chat(messages, "gpt-4.1")
     return {"response": response}
+
+
+def tts_node(state: State, nlp_openai: NLPInterface) -> State:
+    audio_path = nlp_openai.text_to_speech(state.get("response"))
+    print(audio_path)
+    return {"audio_path": audio_path}
+
+
+def stt_node(state: State, nlp_openai: NLPInterface) -> State:
+    user_message = nlp_openai.speech_to_text(state.get("audio_path"))
+    return {"user_message": user_message}

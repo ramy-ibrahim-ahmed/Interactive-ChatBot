@@ -4,6 +4,7 @@ from ..core.schemas.guide import ManySearchResults, SearchQueries
 
 class State(TypedDict):
     user_message: str
+    audio_path: str
     system_name: str
     enhanced_query: SearchQueries
     search_results: ManySearchResults

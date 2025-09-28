@@ -16,6 +16,7 @@ class PromptFactory:
             "analysis": self._load_prompt,
             "vlm_markdown": self._load_prompt,
             "llm_chunk": self._load_prompt,
+            "formate": self._load_prompt,
         }
 
     def get_prompt(
@@ -28,6 +29,7 @@ class PromptFactory:
             "analysis",
             "vlm_markdown",
             "llm_chunk",
+            "formate",
         ],
     ) -> str:
         if prompt_type not in self.prompts:

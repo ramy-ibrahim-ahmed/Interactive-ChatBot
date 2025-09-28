@@ -21,3 +21,9 @@ class NLPInterface(ABC):
     def rerank(
         self, query: str, documents: list[str], model_name: str, top_n: int
     ) -> list[str]: ...
+
+    @abstractmethod
+    def text_to_speech(self, text: str) -> str: ...
+
+    @abstractmethod
+    def speech_to_text(self, audio_path: str) -> str: ...
