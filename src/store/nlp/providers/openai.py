@@ -2,12 +2,13 @@ import os
 import re
 import numpy as np
 from uuid import uuid4
+from openai import OpenAI
 from ..interface import NLPInterface
 
 
 class OpenAIProvider(NLPInterface):
     def __init__(self, openai_client):
-        self.openai_client = openai_client
+        self.openai_client: OpenAI = openai_client
 
     def embed(self, list_of_text, batch_size=1, model_name="text-embedding-3-large"):
         vectors = []
@@ -28,7 +29,7 @@ class OpenAIProvider(NLPInterface):
         # response = self.openai_client.beta.chat.completions.parse(
         #     model=model_name, messages=messages, temperature=0.0, top_p=1.0
         # )
-        response = self.openai_client.beta.chat.completions.parse(
+        response = self.openai_client.beta.chat.completions.create(
             model=model_name, messages=messages
         )
         return response.choices[0].message.content

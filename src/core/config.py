@@ -14,6 +14,7 @@ class Settings(BaseSettings):
     GEMINI_NAME: str
     GEMINI_API_KEYS: list[str]
     PINECONE_INDEX: str
+    GEMINI_API_KEY: str
 
     class Config:
         env_file = ".env"

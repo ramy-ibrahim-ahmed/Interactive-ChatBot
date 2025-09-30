@@ -7,9 +7,15 @@ from ...core.config import get_settings
 
 
 class NLPFactory:
-    def create(provider: Literal["openai", "cohere"]) -> NLPInterface:
+    def create(provider: Literal["openai", "gemini", "cohere"]) -> NLPInterface:
         if provider.lower() == "openai":
             openai_client = OpenAI(api_key=get_settings().OPENAI_API_KEY)
+            return OpenAIProvider(openai_client=openai_client)
+        elif provider.lower() == "gemini":
+            openai_client = OpenAI(
+                api_key=get_settings().GEMINI_API_KEY,
+                base_url="https://generativelanguage.googleapis.com/v1beta/openai/",
+            )
             return OpenAIProvider(openai_client=openai_client)
 
         elif provider.lower() == "cohere":

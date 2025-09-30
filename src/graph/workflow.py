@@ -19,7 +19,7 @@ def router_intent(state: State):
     return END
 
 
-def init_workflow(nlp_openai, nlp_cohere, vectordb):
+def init_workflow(nlp_openai, nlp_gemini, nlp_cohere, vectordb):
     query_agent = partial(query_node, nlp_openai=nlp_openai)
     search_agent = partial(
         search_node, nlp_openai=nlp_openai, nlp_cohere=nlp_cohere, vectordb=vectordb
@@ -27,7 +27,7 @@ def init_workflow(nlp_openai, nlp_cohere, vectordb):
     formate_agent = formate_node
     chat_agent = partial(chat_node, nlp_openai=nlp_openai)
     intent_agent = partial(intent_node, nlp_openai=nlp_openai)
-    analysis_agent = partial(analysis_node, nlp_openai=nlp_openai)
+    analysis_agent = partial(analysis_node, nlp_openai=nlp_gemini)
     system_agent = partial(system_node, nlp_openai=nlp_openai)
     tts_agent = partial(tts_node, nlp_openai=nlp_openai)
 

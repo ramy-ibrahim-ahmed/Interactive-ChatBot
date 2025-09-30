@@ -7,6 +7,7 @@ import os
 import tempfile
 import shutil
 from pathlib import Path
+import time
 
 router = APIRouter(
     prefix="/chat",
@@ -21,6 +22,7 @@ async def chat(
 ):
     vectordb: VectorDBInterface = request.app.state.vectordb
     nlp_openai: NLPInterface = request.app.state.nlp_openai
+    nlp_gemini: NLPInterface = request.app.state.nlp_gemini
     nlp_cohere: NLPInterface = request.app.state.nlp_cohere
 
     if audio:
@@ -29,29 +31,21 @@ async def chat(
             audio_path = tmp.name
         transcribed = nlp_openai.speech_to_text(audio_path)
         user_message = transcribed
-        # os.unlink(audio_path)  # clean up
     elif query:
         user_message = query
     else:
         raise HTTPException(status_code=400, detail="Provide either query or audio")
 
-    workflow = init_workflow(nlp_openai, nlp_cohere, vectordb)
+    workflow = init_workflow(nlp_openai, nlp_gemini, nlp_cohere, vectordb)
+    start = time.time()
     response = workflow.invoke({"user_message": user_message})
-
-    base_response = {
-        "user_message": user_message,
-        "intent": response["intent"],
-        "search_results": "",
-    }
+    end = time.time()
 
     if response.get("intent") != "ERP":
-        return {
-            **base_response,
-            "answer": "I cant help.",
-        }
+        return {"answer": "I cant help."}
 
     return {
-        **base_response,
+        "time": end - start,
         "answer": response.get("response"),
         "analysis": response.get("analysis"),
         "enhanced_query": response.get("enhanced_query"),

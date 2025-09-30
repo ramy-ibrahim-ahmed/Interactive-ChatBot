@@ -16,6 +16,7 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     app.state.nlp_openai = NLPFactory.create(provider="openai")
+    app.state.nlp_gemini = NLPFactory.create(provider="gemini")
     app.state.nlp_cohere = NLPFactory.create(provider="cohere")
     vectordb_factory = VectorDBFactory()
     vectordb = vectordb_factory.create(provider="pinecone", settings=SETTINGS)
