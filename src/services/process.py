@@ -7,8 +7,9 @@ from ..core.enums import OpenAIRolesEnum
 
 
 class ProcessService:
-    def __init__(self, nlp, vectordb):
+    def __init__(self, nlp, nlp_cohere, vectordb):
         self.nlp: NLPInterface = nlp
+        self.nlp_cohere = nlp_cohere
         self.vectordb: VectorDBInterface = vectordb
 
     def split_md_file(self, file_path, separator="---#---"):
@@ -30,34 +31,33 @@ class ProcessService:
         out.pop(0)
         return ["\n\n---\n\n".join(map(str, sublist)) for sublist in out]
 
-    def chunk(self, file_path, separator, boundaries, num_toc_pages):
+    def chunk(
+        self,
+        file_path,
+        separator,
+        boundaries,
+        num_toc_pages,
+        collection_name: str,
+    ):
         pages = self.split_md_file(file_path, separator)
         topics = self.split_at_boundaries(pages, boundaries, num_toc_pages)
 
-        many_chunks = list()
-        for topic in tqdm(topics, total=len(topics), desc="chunking"):
+        for topic_id, topic in tqdm(
+            enumerate(topics), total=len(topics), desc="chunking"
+        ):
             response = self.nlp.structured_chat(
                 response_model=Chunks,
                 model_name="gpt-4.1",
                 messages=[
                     {
                         "role": OpenAIRolesEnum.SYSTEM.value,
-                        "content": PromptFactory().get_prompt("llm_chunk"),
+                        "content": PromptFactory().get_prompt("chunking_rewrite"),
                     },
                     {"role": OpenAIRolesEnum.USER.value, "content": topic},
                 ],
             )
-            many_chunks.append(response)
-        return many_chunks
-
-    def upload(self, collection_name: str, topics_chunks):
-        self.vectordb.create_collection(name=collection_name)
-
-        for topic_id, chunks in tqdm(
-            enumerate(topics_chunks), total=len(topics_chunks), desc="uploading"
-        ):
-            embeddings = self.nlp.embed(chunks.chunks)
+            embeddings = self.nlp_cohere.embed(response.chunks, batch_size=10)
             metadata = list()
-            for text in chunks.chunks:
+            for text in response.chunks:
                 metadata.append({"topic_id": topic_id + 1, "text": text})
             self.vectordb.upsert(embeddings, metadata, collection_name, 100)

@@ -17,26 +17,6 @@ Your mission is to expand and reformulate the user’s question in **Arabic** to
 
 -----
 
-## Example
-
-* **Original User Question:** "ازاي اضيف مورد جديد؟" (How do I add a new supplier?)
-
-* **Your Ideal Output:**
-
-    ```json
-    {
-      "queries": [
-        "خطوات إضافة مورد جديد في نظام ERB",
-        "كيفية تسجيل بيانات الموردين والمقاولين",
-        "إنشاء سجل مورد جديد في قسم المشتريات",
-        "إدخال مورد جديد في قاعدة بيانات الموردين"
-      ],
-      "reranker_query": "الإجراءات والخطوات الكاملة لإنشاء وإضافة سجل مورد جديد في نظام ERB الخاص بالمشتريات."
-    }
-    ```
-
------
-
 ## Output Format
 
 * Provide your response as a JSON object conforming to the `SearchQueries` schema. It must contain the `queries` list and the `reranker_query` string.

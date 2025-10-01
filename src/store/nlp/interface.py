@@ -10,11 +10,22 @@ class NLPInterface(ABC):
     ) -> list[list[float]]: ...
 
     @abstractmethod
-    def chat(self, messages: list[dict], model_name: str) -> list[list[float]]: ...
+    def chat(
+        self,
+        messages: list[dict],
+        model_name: str,
+        temperature: float,
+        top_p: float,
+    ) -> list[list[float]]: ...
 
     @abstractmethod
     def structured_chat(
-        self, response_model: BaseModel, model_name: str, messages: str
+        self,
+        response_model: BaseModel,
+        model_name: str,
+        messages: str,
+        temperature: float,
+        top_p: float,
     ) -> BaseModel: ...
 
     @abstractmethod

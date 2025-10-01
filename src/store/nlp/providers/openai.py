@@ -10,7 +10,12 @@ class OpenAIProvider(NLPInterface):
     def __init__(self, openai_client):
         self.openai_client: OpenAI = openai_client
 
-    def embed(self, list_of_text, batch_size=1, model_name="text-embedding-3-large"):
+    def embed(
+        self,
+        list_of_text: list[str],
+        batch_size=10,
+        model_name="text-embedding-3-large",
+    ) -> list[list[float]]:
         vectors = []
         for i in range(0, len(list_of_text), batch_size):
             batch = list_of_text[i : i + batch_size]
@@ -25,22 +30,32 @@ class OpenAIProvider(NLPInterface):
             vectors.extend(batch_vectors)
         return vectors
 
-    def chat(self, messages: list[dict], model_name: str) -> list[list[float]]:
-        # response = self.openai_client.beta.chat.completions.parse(
-        #     model=model_name, messages=messages, temperature=0.0, top_p=1.0
-        # )
-        response = self.openai_client.beta.chat.completions.create(
-            model=model_name, messages=messages
-        )
-        return response.choices[0].message.content
+    def chat(
+        self, messages: list[dict], model_name: str, temperature=0.0, top_p=1.0
+    ) -> list[list[float]]:
+        if temperature:
+            response = self.openai_client.beta.chat.completions.create(
+                model=model_name,
+                messages=messages,
+                temperature=temperature,
+                top_p=top_p,
+            )
+            return response.choices[0].message.content
+        else:
+            response = self.openai_client.beta.chat.completions.create(
+                model=model_name, messages=messages
+            )
+            return response.choices[0].message.content
 
-    def structured_chat(self, response_model, model_name, messages):
+    def structured_chat(
+        self, response_model, model_name, messages, temperature=0.0, top_p=1.0
+    ):
         response = self.openai_client.beta.chat.completions.parse(
             model=model_name,
             messages=messages,
             response_format=response_model,
-            temperature=0.0,
-            top_p=1.0,
+            temperature=temperature,
+            top_p=top_p,
         )
         msg = response.choices[0].message
         return msg.parsed

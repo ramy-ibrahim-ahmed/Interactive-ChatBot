@@ -15,9 +15,10 @@ class PromptFactory:
             "memory": self._load_prompt,
             "analysis": self._load_prompt,
             "vlm_markdown": self._load_prompt,
-            "llm_chunk": self._load_prompt,
+            "chunk_fixed": self._load_prompt,
             "formate": self._load_prompt,
             "answer-one-step": self._load_prompt,
+            "chunking_rewrite": self._load_prompt,
         }
 
     def get_prompt(
@@ -29,9 +30,10 @@ class PromptFactory:
             "memory",
             "analysis",
             "vlm_markdown",
-            "llm_chunk",
+            "chunk_fixed",
             "formate",
             "answer-one-step",
+            "chunking_rewrite",
         ],
     ) -> str:
         if prompt_type not in self.prompts:

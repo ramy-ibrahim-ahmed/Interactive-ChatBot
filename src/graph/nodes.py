@@ -13,7 +13,7 @@ def intent_node(state: State, nlp_openai: NLPInterface):
         {"role": OpenAIRolesEnum.SYSTEM.value, "content": intent_prompt},
         {"role": OpenAIRolesEnum.USER.value, "content": user_message},
     ]
-    intent = nlp_openai.chat(messages, "gpt-4.1")
+    intent = nlp_openai.chat(messages, "gpt-4.1", temperature=0.0, top_p=1.0)
     return {"intent": intent}
 
 
@@ -26,12 +26,12 @@ def query_node(state: State, nlp_openai: NLPInterface) -> State:
         {"role": OpenAIRolesEnum.USER.value, "content": user_message},
     ]
 
-    enhanced_query = nlp_openai.structured_chat(SearchQueries, "gpt-4.1-mini", messages)
+    enhanced_query = nlp_openai.structured_chat(SearchQueries, "gpt-4.1", messages)
     return {"enhanced_query": enhanced_query}
 
 
 def system_node(state: State, nlp_openai: NLPInterface) -> State:
-    return {"system_name": "customers_fixed_size"}
+    return {"system_name": "customers_v1"}
 
 
 def search_node(
@@ -40,14 +40,15 @@ def search_node(
     nlp_cohere: NLPInterface,
     vectordb: VectorDBInterface,
 ) -> State:
+    user_message = state.get("user_message")
     enhanced_query = state.get("enhanced_query")
     system_name = state.get("system_name")
-    embeddings = nlp_openai.embed(enhanced_query.queries)
+    embeddings = nlp_cohere.embed(enhanced_query.queries)
 
-    nearest = vectordb.query_chunks(embeddings, system_name, max_retrieved=40)
+    nearest = vectordb.query_chunks(embeddings, system_name, max_retrieved=30)
     nearest_unique = [dict(t) for t in {tuple(sorted(d.items())) for d in nearest}]
     reranked_nearest = nlp_cohere.rerank(
-        enhanced_query.reranker_query, nearest_unique, "rerank-v3.5", 5
+        enhanced_query.reranker_query, nearest_unique, "rerank-v3.5", 10
     )
 
     search_results = ManySearchResults(
@@ -68,9 +69,11 @@ def formate_node(state: State) -> State:
 
     search_as_list = list()
     for result in search_results.results:
-        search_as_list.append(f"Topic: {result.topic}\nChunk Text:\n{result.text}")
+        search_as_list.append(result.text)
 
-    search_as_text = "\n\n---\n\n".join(search_as_list)
+    search_as_text = "\n\n\n---\n\n\n".join(search_as_list)
+    with open("output.txt", "w", encoding="utf-8") as f:
+        f.write(search_as_text)
     return {"formated_search": search_as_text}
 
 
@@ -85,29 +88,29 @@ def analysis_node(state: State, nlp_openai: NLPInterface):
         {"role": OpenAIRolesEnum.ASSISTANT.value, "content": formated_search},
     ]
 
-    analysis = nlp_openai.chat(messages, "gemini-2.5-pro")
+    analysis = nlp_openai.chat(messages, "gpt-4.1", temperature=0.0, top_p=1.0)
     return {"analysis": analysis}
 
 
 def chat_node(state: State, nlp_openai: NLPInterface) -> State:
     prompt_chat = PromptFactory().get_prompt("chat")
+    enhanced_query = state.get("enhanced_query")
     user_message = state.get("user_message", "")
     analysis: ManySearchResults = state.get("analysis", "")
 
     messages = [
         {"role": OpenAIRolesEnum.SYSTEM.value, "content": prompt_chat},
-        {"role": OpenAIRolesEnum.USER.value, "content": user_message},
+        {"role": OpenAIRolesEnum.USER.value, "content": enhanced_query.reranker_query},
         {"role": OpenAIRolesEnum.ASSISTANT.value, "content": analysis},
     ]
 
-    response = nlp_openai.chat(messages, "gpt-4.1-mini")
+    response = nlp_openai.chat(messages, "gpt-4.1", temperature=0.0, top_p=1.0)
     return {"response": response}
 
 
 def tts_node(state: State, nlp_openai: NLPInterface) -> State:
-    audio_path = nlp_openai.text_to_speech(state.get("response"))
-    print(audio_path)
-    return {"audio_path": audio_path}
+    # audio_path = nlp_openai.text_to_speech(state.get("response"))
+    return {"audio_path": ""}
 
 
 def stt_node(state: State, nlp_openai: NLPInterface) -> State:

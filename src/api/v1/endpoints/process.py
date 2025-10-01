@@ -29,8 +29,9 @@ async def process_markdown(
         raise HTTPException(status_code=400, detail="File must be a Markdown file")
 
     nlp_openai: NLPInterface = request.app.state.nlp_openai
+    nlp_cohere: NLPInterface = request.app.state.nlp_cohere
     vectordb: VectorDBInterface = request.app.state.vectordb
-    service = ProcessService(nlp_openai, vectordb)
+    service = ProcessService(nlp_openai, nlp_cohere, vectordb)
 
     try:
         try:
@@ -48,10 +49,9 @@ async def process_markdown(
             tmp.write(content)
             file_path = tmp.name
 
-        many_chunks = service.chunk(
-            file_path, separator, boundaries_list, num_toc_pages
+        service.chunk(
+            file_path, separator, boundaries_list, num_toc_pages, collection_name
         )
-        service.upload(collection_name, many_chunks)
 
         return {"message": "Data processed and uploaded successfully"}
     finally:
