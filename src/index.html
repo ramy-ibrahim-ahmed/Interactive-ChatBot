@@ -15,6 +15,7 @@
             overflow: hidden;
         }
 
+        /* Custom Scrollbar */
         #chat-container::-webkit-scrollbar {
             width: 8px;
         }
@@ -32,9 +33,21 @@
             background: #64748b;
         }
 
+        /* Chat Bubbles */
         .chat-bubble-user {
             background-color: #3b82f6;
             color: white;
+        }
+
+        /* --- ENHANCEMENT 1: Grid Background --- */
+        #chat-container {
+            background-color: #f8fafc;
+            /* slate-50 */
+            background-image:
+                linear-gradient(to right, #e2e8f0 1px, transparent 1px),
+                linear-gradient(to bottom, #e2e8f0 1px, transparent 1px);
+            background-size: 6rem 3rem;
+            /* Increased to 64px grid for wider appearance */
         }
 
         /* Persona idle animation */
@@ -53,32 +66,69 @@
         #persona-svg {
             animation: bob 4s ease-in-out infinite;
         }
+
+        /* Blinking Cursor for typing indicator */
+        @keyframes blink {
+            50% {
+                opacity: 0;
+            }
+        }
+
+        .blinking-cursor {
+            display: inline-block;
+            width: 8px;
+            height: 1.2em;
+            background-color: #333;
+            animation: blink 1s step-end infinite;
+            vertical-align: text-bottom;
+        }
+
+        /* --- ENHANCEMENT 2: Mic Button Recording Animation --- */
+        @keyframes pulse-shadow {
+            0% {
+                box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7);
+            }
+
+            70% {
+                box-shadow: 0 0 0 10px rgba(239, 68, 68, 0);
+            }
+
+            100% {
+                box-shadow: 0 0 0 0 rgba(239, 68, 68, 0);
+            }
+        }
+
+        .recording-pulse {
+            animation: pulse-shadow 2s infinite;
+        }
     </style>
 </head>
 
 <body class="bg-slate-100 h-screen w-screen overflow-hidden">
 
+    <svg style="position: absolute; width: 0; height: 0;" aria-hidden="true">
+        <filter id="sketchy">
+            <feTurbulence type="fractalNoise" baseFrequency="0.05" numOctaves="3" result="noise" />
+            <feDisplacementMap in="SourceGraphic" in2="noise" scale="2" xChannelSelector="R" yChannelSelector="G" />
+        </filter>
+    </svg>
+
     <div dir="ltr" class="bg-white w-full h-full flex flex-col md:flex-row overflow-hidden">
 
-        <!-- Persona Section -->
         <div
             class="w-full md:w-1/3 bg-slate-800 flex flex-col items-center justify-center p-8 border-b-4 border-slate-700 md:border-r-4 md:border-b-0">
             <div class="w-48 h-48 md:w-64 md:h-64">
                 <svg id="persona-svg" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
-                    <!-- Head -->
                     <path id="head" fill="#475569"
                         d="M 50,25 C 25,25 25,50 25,75 L 25,125 C 25,150 25,175 50,175 L 150,175 C 175,175 175,150 175,125 L 175,75 C 175,50 175,25 150,25 Z" />
 
-                    <!-- Eye background -->
                     <rect x="55" y="60" width="90" height="40" rx="20" fill="#1e293b" />
 
-                    <!-- Eyes -->
                     <g id="eyes">
                         <circle id="left-eye" cx="80" cy="80" r="8" fill="#34d399" />
                         <circle id="right-eye" cx="120" cy="80" r="8" fill="#34d399" />
                     </g>
 
-                    <!-- Mouth -->
                     <g id="mouth">
                         <path d="M 80 125 Q 100 140 120 125" stroke="#34d399" stroke-width="4" fill="none"
                             stroke-linecap="round" />
@@ -91,18 +141,18 @@
             </div>
         </div>
 
-        <!-- Chat Section -->
         <div class="w-full md:w-2/3 flex flex-col h-full">
             <div class="flex-1 p-6 overflow-y-auto space-y-4" id="chat-container">
-                <!-- Chat messages will be appended here -->
             </div>
             <div class="p-4 bg-white border-t border-slate-200">
-                <form id="chat-form" class="flex items-end space-x-2">
-                    <textarea id="chat-input" rows="4" placeholder="اكتب سؤالك هنا..."
-                        class="flex-1 p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none transition resize-none text-right"
+                <form id="chat-form" class="flex items-end space-x-3">
+                    <textarea id="chat-input" rows="3" placeholder="اكتب سؤالك هنا..."
+                        class="flex-1 p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none transition resize-none text-right bg-white"
                         dir="rtl" autocomplete="off"></textarea>
+
                     <button type="button" id="mic-button"
-                        class="bg-green-500 hover:bg-green-600 text-white font-bold p-3 rounded-lg transition-transform duration-200 ease-in-out active:scale-95 flex items-center justify-center w-12 h-12">
+                        class="bg-transparent border-2 border-green-500 hover:bg-green-100 hover:border-green-700 hover:text-green-700 text-green-500 font-bold p-3 rounded-full shadow-lg transition-all duration-200 ease-in-out active:scale-95 flex items-center justify-center w-12 h-12"
+                        style="filter: url(#sketchy);">
                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
                             stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"></path>
@@ -110,8 +160,10 @@
                             <line x1="12" x2="12" y1="19" y2="22"></line>
                         </svg>
                     </button>
+
                     <button type="submit" id="send-button"
-                        class="bg-blue-500 hover:bg-blue-600 text-white font-bold p-3 rounded-lg transition-transform duration-200 ease-in-out active:scale-95 flex items-center justify-center w-12 h-12">
+                        class="bg-transparent border-2 border-blue-500 hover:bg-blue-100 hover:border-blue-700 hover:text-blue-700 text-blue-500 font-bold p-3 rounded-lg transition-transform duration-200 ease-in-out active:scale-95 flex items-center justify-center w-12 h-12"
+                        style="filter: url(#sketchy);">
                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
                             stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
                             class="feather feather-send">
@@ -125,7 +177,7 @@
     </div>
 
     <script>
-        // DOM Elements
+        // DOM Elements (no changes here)
         const chatContainer = document.getElementById('chat-container');
         const chatForm = document.getElementById('chat-form');
         const chatInput = document.getElementById('chat-input');
@@ -135,26 +187,22 @@
         const sendButton = document.getElementById('send-button');
         const micButton = document.getElementById('mic-button');
 
-        // Chat state
+        // Chat state & other variables (no changes here)
         let isLoading = false;
         let isRecording = false;
         let mediaRecorder;
         let audioChunks = [];
         let lastUserMessage;
         let isAudioInput = false;
-
-        // Backend URL
         const backendUrl = '/api/v1/chat';
+        const ttsUrl = '/api/v1/chat/tts';
 
-        // RTL detection
+        // Helper functions and persona states
         function isRTL(text) {
             const rtlChars = /[\u0590-\u05FF\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF\uFB50-\uFDFF\uFE70-\uFEFF]/;
             return rtlChars.test(text);
         }
-
-        // Persona animation state
         let blinkInterval;
-
         const personaStates = {
             idle: {
                 mouth: '<path d="M 80 125 Q 100 140 120 125" stroke="#34d399" stroke-width="4" fill="none" stroke-linecap="round" />',
@@ -166,7 +214,8 @@
             thinking: {
                 mouth: '<path d="M 80 130 H 120" stroke="#f59e0b" stroke-width="4" fill="none" stroke-linecap="round" />',
                 eyes: '<circle id="left-eye" cx="80" cy="75" r="8" fill="#f59e0b" /><circle id="right-eye" cx="120" cy="75" r="8" fill="#f59e0b" />',
-                status: 'يفكر...',
+                // --- ENHANCEMENT 3: Updated fallback thinking status ---
+                status: 'جاري المعالجة...',
                 statusColor: 'text-amber-400'
             },
             talking: {
@@ -186,9 +235,7 @@
                 statusColor: 'text-red-500'
             }
         };
-
         let talkInterval;
-
         function setPersonaState(state) {
             clearInterval(blinkInterval);
             clearInterval(talkInterval);
@@ -229,28 +276,85 @@
             }
         }
 
-        function addMessageToChat(sender, message) {
+        function addAudioButton(messageElement) {
+            const audioButton = document.createElement('button');
+            audioButton.classList.add('mt-2', 'flex', 'items-center', 'gap-1', 'text-blue-500', 'bg-transparent', 'border-2', 'border-blue-500', 'hover:bg-blue-100', 'hover:border-blue-600', 'hover:text-blue-600', 'px-3', 'py-1', 'rounded-lg', 'transition-colors', 'font-medium', 'text-sm');
+            audioButton.style.filter = 'url(#sketchy)';
+            audioButton.innerHTML = `
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+                    <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path>
+                </svg>
+                استمع إلى الرد
+            `;
+            audioButton.onclick = async () => {
+                const text = messageElement.dataset.originalText;
+                if (!text) return;
+                try {
+                    audioButton.disabled = true;
+                    audioButton.innerHTML = `<span class="animate-pulse">جاري التوليد...</span>`;
+                    const formData = new FormData();
+                    formData.append('text', text);
+                    const res = await fetch(ttsUrl, { method: 'POST', body: formData });
+                    if (!res.ok) throw new Error('TTS failed');
+                    const data = await res.json();
+                    const audio = new Audio(data.audio_path);
+                    audio.play().catch(e => console.error('Playback error:', e));
+                    audio.onplaying = () => setPersonaState('talking');
+                    audio.onended = () => {
+                        setPersonaState('idle');
+                        resetButton();
+                    };
+                    audio.onerror = () => resetButton();
+                    function resetButton() {
+                        audioButton.disabled = false;
+                        audioButton.innerHTML = `
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+                                <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path>
+                            </svg>
+                            استمع إلى الرد
+                        `;
+                    }
+                } catch (e) {
+                    console.error('TTS error:', e);
+                    alert('فشل في توليد الصوت.');
+                    audioButton.disabled = false;
+                    audioButton.innerHTML = `
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+                            <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path>
+                        </svg>
+                        استمع إلى الرد
+                    `;
+                }
+            };
+            messageElement.appendChild(audioButton);
+        }
+
+        function addMessageToChat(sender, message, returnElement = false) {
             const messageWrapper = document.createElement('div');
             messageWrapper.classList.add('mb-4', 'w-full', 'animate__animated', 'animate__fadeIn');
-            if (sender === 'user') {
-                messageWrapper.classList.add('flex', 'justify-end');
-            } else {
-                messageWrapper.classList.add('flex', 'justify-start');
-            }
+            messageWrapper.classList.add('flex', sender === 'user' ? 'justify-end' : 'justify-start');
 
             const messageElement = document.createElement('div');
             messageElement.classList.add('px-4', 'py-3', 'break-words', 'rounded-lg', 'shadow-md', 'max-w-xs', 'lg:max-w-md');
 
             if (sender === 'bot') {
-                messageElement.innerHTML = marked.parse(message);
-                messageElement.classList.add('bg-gray-200', 'text-gray-800');
+                messageElement.dataset.originalText = message;
+                if (message === '...') {
+                    messageElement.innerHTML = '<span class="blinking-cursor"></span>';
+                } else {
+                    messageElement.innerHTML = marked.parse(message);
+                    addAudioButton(messageElement);
+                }
+                messageElement.classList.add('bg-slate-200', 'text-slate-800');
             } else {
                 messageElement.textContent = message;
                 messageElement.classList.add('chat-bubble-user');
             }
 
-            const text = messageElement.textContent.trim();
-            if (isRTL(text)) {
+            if (isRTL(messageElement.textContent.trim())) {
                 messageElement.dir = 'rtl';
                 messageElement.classList.add('text-right');
             } else {
@@ -261,6 +365,10 @@
             messageWrapper.appendChild(messageElement);
             chatContainer.appendChild(messageWrapper);
             chatContainer.scrollTop = chatContainer.scrollHeight;
+
+            if (returnElement) {
+                return messageElement;
+            }
 
             if (sender === 'user') {
                 lastUserMessage = messageElement;
@@ -280,9 +388,57 @@
                     lastUserMessage.classList.add('text-left');
                 }
             }
+        };
+
+        // --- ENHANCEMENT 3: Rewritten to update persona status directly ---
+        function handleStreamEvent(data, botMessageElement) {
+            const event = data.event;
+
+            if (event === 'start_node') {
+                setPersonaState('thinking'); // Sets the thinking face, color, and fallback text
+                const node = data.node;
+                let statusText;
+
+                switch (node) {
+                    case 'classify_intent': statusText = 'فهم الطلب... 🤔'; break;
+                    case 'query_write': statusText = 'تحسين الاستفسار... ✍️'; break;
+                    case 'system_recognize': statusText = 'تحديد النظام... 🕵️'; break;
+                    case 'search': statusText = 'البحث في قاعدة المعرفة... 🔍'; break;
+                    case 'formate_search': statusText = 'تنسيق النتائج... 📋'; break;
+                    case 'analysis': statusText = 'تحليل النتائج... 📊'; break;
+                    case 'chat': statusText = 'تجهيز الرد... 💬'; break;
+                    case 'tts': statusText = 'توليد الصوت... 🔊'; break;
+                    default: statusText = 'جاري المعالجة...'; break;
+                }
+
+                // Directly update the persona status text, overriding the default from setPersonaState
+                personaStatus.textContent = statusText;
+
+            } else if (event === 'final_answer') {
+                const finalData = data.data;
+                if (isAudioInput && finalData.user_message) {
+                    updateLastUserMessage(finalData.user_message);
+                }
+                botMessageElement.dataset.originalText = finalData.answer || "لم أتمكن من إيجاد إجابة.";
+                botMessageElement.innerHTML = marked.parse(finalData.answer || "لم أتمكن من إيجاد إجابة.");
+                addAudioButton(botMessageElement);
+
+                const audioUrl = finalData.audio_path;
+                if (audioUrl) {
+                    const audio = new Audio(audioUrl);
+                    audio.play().catch(e => console.error('Audio playback error:', e));
+                    audio.onplaying = () => setPersonaState('talking');
+                    audio.onended = () => setPersonaState('idle');
+                } else {
+                    setPersonaState('idle');
+                }
+            } else if (event === 'error') {
+                botMessageElement.innerHTML = marked.parse(`حدث خطأ: ${data.message}`);
+                setPersonaState('error');
+                setTimeout(() => setPersonaState('idle'), 4000);
+            }
         }
 
-        // Chatbot API call
         async function callChatbotAPI(prompt = null, audioBlob = null) {
             isLoading = true;
             setPersonaState('thinking');
@@ -290,60 +446,49 @@
             chatInput.disabled = true;
             micButton.disabled = true;
 
-            try {
-                // Always use FormData
-                const formData = new FormData();
+            const botMessageElement = addMessageToChat('bot', '...', true);
 
+            try {
+                const formData = new FormData();
                 if (audioBlob) {
                     formData.append('audio', audioBlob, 'recording.webm');
                 } else if (prompt) {
                     formData.append('query', prompt);
                 }
 
-                const fetchOptions = {
-                    method: 'POST',
-                    body: formData // The body is always FormData
-                };
+                const response = await fetch(backendUrl, { method: 'POST', body: formData });
 
-                // Fetch response
-                const response = await fetch(backendUrl, fetchOptions);
+                if (!response.ok) throw new Error(`API error: ${response.status} ${response.statusText}`);
 
-                if (!response.ok) {
-                    throw new Error(`API error: ${response.statusText}`);
-                }
+                const reader = response.body.getReader();
+                const decoder = new TextDecoder();
+                let buffer = '';
 
-                const result = await response.json();
+                while (true) {
+                    const { done, value } = await reader.read();
+                    if (done) break;
 
-                if (isAudioInput && result.user_message) {
-                    updateLastUserMessage(result.user_message);
-                }
+                    buffer += decoder.decode(value, { stream: true });
+                    const parts = buffer.split('\n\n');
+                    buffer = parts.pop(); // Last part might be incomplete
 
-                const botResponse = result.answer;
-                const audioUrl = result.audio_path;
-
-                if (botResponse) {
-                    addMessageToChat('bot', botResponse);
-                    setPersonaState('talking');
-
-                    if (audioUrl) {
-                        const audio = new Audio(audioUrl);
-                        audio.play().catch(error => {
-                            console.error('Audio playback error:', error);
-                            setPersonaState('idle');
-                        });
-                        audio.onplaying = () => setPersonaState('talking');
-                        audio.onended = () => setPersonaState('idle');
-                        audio.onerror = () => setPersonaState('idle');
-                    } else {
-                        setTimeout(() => setPersonaState('idle'), 2000);
+                    for (const part of parts) {
+                        if (part.startsWith('data: ')) {
+                            const jsonString = part.substring(6);
+                            if (jsonString) {
+                                try {
+                                    const data = JSON.parse(jsonString);
+                                    handleStreamEvent(data, botMessageElement);
+                                } catch (e) {
+                                    console.error('Error parsing streaming JSON:', e, `Received: "${jsonString}"`);
+                                }
+                            }
+                        }
                     }
-                } else {
-                    throw new Error("Invalid response from API");
                 }
-
             } catch (error) {
                 console.error("Chatbot API Error:", error);
-                addMessageToChat('bot', 'عذرا، يبدو أنني أواجه بعض المشاكل الآن. يرجى المحاولة لاحقا.');
+                botMessageElement.innerHTML = marked.parse('عذراً، حدثت مشكلة. يرجى المحاولة مرة أخرى.');
                 setPersonaState('error');
                 setTimeout(() => setPersonaState('idle'), 4000);
             } finally {
@@ -355,6 +500,7 @@
                 chatInput.focus();
             }
         }
+
         // Text input submit
         chatForm.addEventListener('submit', (e) => {
             e.preventDefault();
@@ -384,8 +530,8 @@
                     };
                     mediaRecorder.start();
                     isRecording = true;
-                    micButton.classList.remove('bg-green-500', 'hover:bg-green-600');
-                    micButton.classList.add('bg-red-500', 'hover:bg-red-600');
+                    micButton.classList.remove('border-green-500', 'text-green-500', 'hover:bg-green-100', 'hover:border-green-700', 'hover:text-green-700');
+                    micButton.classList.add('border-red-500', 'text-red-500', 'hover:bg-red-100', 'hover:border-red-700', 'hover:text-red-700', 'recording-pulse');
                 } catch (error) {
                     console.error('Microphone access error:', error);
                     alert('يرجى السماح بالوصول إلى الميكروفون.');
@@ -393,8 +539,8 @@
             } else {
                 mediaRecorder.stop();
                 isRecording = false;
-                micButton.classList.remove('bg-red-500', 'hover:bg-red-600');
-                micButton.classList.add('bg-green-500', 'hover:bg-green-600');
+                micButton.classList.remove('border-red-500', 'text-red-500', 'hover:bg-red-100', 'hover:border-red-700', 'hover:text-red-700', 'recording-pulse');
+                micButton.classList.add('border-green-500', 'text-green-500', 'hover:bg-green-100', 'hover:border-green-700', 'hover:text-green-700');
             }
         });
 

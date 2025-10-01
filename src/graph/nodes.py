@@ -100,19 +100,13 @@ def chat_node(state: State, nlp_openai: NLPInterface) -> State:
 
     messages = [
         {"role": OpenAIRolesEnum.SYSTEM.value, "content": prompt_chat},
-        {"role": OpenAIRolesEnum.USER.value, "content": enhanced_query.reranker_query},
+        {"role": OpenAIRolesEnum.USER.value, "content": user_message},
+        {
+            "role": OpenAIRolesEnum.ASSISTANT.value,
+            "content": "Enhanced query: " + enhanced_query.reranker_query,
+        },
         {"role": OpenAIRolesEnum.ASSISTANT.value, "content": analysis},
     ]
 
     response = nlp_openai.chat(messages, "gpt-4.1", temperature=0.0, top_p=1.0)
     return {"response": response}
-
-
-def tts_node(state: State, nlp_openai: NLPInterface) -> State:
-    # audio_path = nlp_openai.text_to_speech(state.get("response"))
-    return {"audio_path": ""}
-
-
-def stt_node(state: State, nlp_openai: NLPInterface) -> State:
-    user_message = nlp_openai.speech_to_text(state.get("audio_path"))
-    return {"user_message": user_message}

@@ -9,7 +9,6 @@ from .nodes import (
     intent_node,
     analysis_node,
     system_node,
-    tts_node,
 )
 
 
@@ -29,7 +28,6 @@ def init_workflow(nlp_openai, nlp_gemini, nlp_cohere, vectordb):
     intent_agent = partial(intent_node, nlp_openai=nlp_openai)
     analysis_agent = partial(analysis_node, nlp_openai=nlp_openai)
     system_agent = partial(system_node, nlp_openai=nlp_openai)
-    tts_agent = partial(tts_node, nlp_openai=nlp_openai)
 
     workflow = StateGraph(State)
     workflow.add_node("classify_intent", intent_agent)
@@ -39,7 +37,6 @@ def init_workflow(nlp_openai, nlp_gemini, nlp_cohere, vectordb):
     workflow.add_node("formate_search", formate_agent)
     workflow.add_node("analysis", analysis_agent)
     workflow.add_node("chat", chat_agent)
-    workflow.add_node("tts", tts_agent)
 
     workflow.set_entry_point("classify_intent")
     workflow.add_conditional_edges(
@@ -52,7 +49,6 @@ def init_workflow(nlp_openai, nlp_gemini, nlp_cohere, vectordb):
     workflow.add_edge("search", "formate_search")
     workflow.add_edge("formate_search", "analysis")
     workflow.add_edge("analysis", "chat")
-    workflow.add_edge("chat", "tts")
-    workflow.add_edge("tts", END)
+    workflow.add_edge("chat", END)
 
     return workflow.compile()
