@@ -10,7 +10,7 @@ class CohereProvider(NLPInterface):
         response = self.cohere_client.rerank(
             model=model_name,
             query=query,
-            documents=documents,
+            documents=[doc["text"] for doc in documents],
             top_n=top_n,
         )
 
@@ -20,12 +20,13 @@ class CohereProvider(NLPInterface):
 
         ranked = []
         for item in sorted_results:
+            doc = documents[item.index]
             ranked.append(
                 {
                     "index": item.index,
                     "score": float(item.relevance_score),
-                    "topic": documents[item.index]["topic_id"],
-                    "text": documents[item.index]["text"],
+                    "topic": doc["topic_id"],
+                    "text": doc["text"],
                 }
             )
 

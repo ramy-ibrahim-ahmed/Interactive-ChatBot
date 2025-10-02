@@ -12,13 +12,14 @@ class ManySearchResults(BaseModel):
 
 
 class SearchQueries(BaseModel):
-    queries: list[str] = Field(
-        ...,
-        description="A list of relevant search queries in Arabic designed to maximize semantic search recall from a knowledge base.",
+    semantic_queries: list[str] = Field(
+        description="List of queries optimized for semantic search (embeddings-based), rephrasing and expanding the user question for better vector matching."
+    )
+    lexical_search_query: str = Field(
+        description="Exact keywords from the user question, preserved as-is (especially for accounting methodologies), for keyword-based (lexical) search."
     )
     reranker_query: str = Field(
-        ...,
-        description="A single, comprehensive declarative sentence in Arabic that encapsulates the core information need. This is used by a reranker to improve the precision of the final search results.",
+        description="An expanded query that stays within the user's needs, used for reranking retrieved results."
     )
 
 
