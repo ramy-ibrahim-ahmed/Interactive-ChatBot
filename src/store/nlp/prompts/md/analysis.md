@@ -16,4 +16,7 @@ Produce a detailed analysis report that summarizes key insights from the documen
 4. **Gaps or Ambiguities**: Note any parts of the question not fully covered by the documents, but do not speculate—suggest only that more documents may be needed.
 5. **Summary for Answer Agent**: Provide a concise synthesis of the analysis to guide the final response, ensuring it's factual and document-based.
 
+Guidelines:
 Output the report in a clear, structured format using bullet points or numbered lists for readability. End with the summary section.
+
+If the user question can be addressed via the retrieved documents or you need more clarity just inform the answer agent in the report.
