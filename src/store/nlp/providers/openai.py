@@ -1,16 +1,16 @@
 import os
 import re
-import numpy as np
 from uuid import uuid4
-from openai import OpenAI
+import numpy as np
+from openai import AsyncOpenAI
 from ..interface import NLPInterface
 
 
 class OpenAIProvider(NLPInterface):
     def __init__(self, openai_client):
-        self.openai_client: OpenAI = openai_client
+        self.openai_client: AsyncOpenAI = openai_client
 
-    def embed(
+    async def embed(
         self,
         list_of_text: list[str],
         batch_size=10,
@@ -19,7 +19,7 @@ class OpenAIProvider(NLPInterface):
         vectors = []
         for i in range(0, len(list_of_text), batch_size):
             batch = list_of_text[i : i + batch_size]
-            response = self.openai_client.embeddings.create(
+            response = await self.openai_client.embeddings.create(
                 input=batch, model=model_name
             )
             batch_vectors = [item.embedding for item in response.data]
@@ -30,27 +30,23 @@ class OpenAIProvider(NLPInterface):
             vectors.extend(batch_vectors)
         return vectors
 
-    def chat(
+    async def chat(
         self, messages: list[dict], model_name: str, temperature=0.0, top_p=1.0
-    ) -> list[list[float]]:
+    ) -> str:
+        kwargs = {
+            "model": model_name,
+            "messages": messages,
+        }
         if temperature:
-            response = self.openai_client.beta.chat.completions.create(
-                model=model_name,
-                messages=messages,
-                temperature=temperature,
-                top_p=top_p,
-            )
-            return response.choices[0].message.content
-        else:
-            response = self.openai_client.beta.chat.completions.create(
-                model=model_name, messages=messages
-            )
-            return response.choices[0].message.content
+            kwargs["temperature"] = temperature
+            kwargs["top_p"] = top_p
+        response = await self.openai_client.chat.completions.create(**kwargs)
+        return response.choices[0].message.content
 
-    def structured_chat(
+    async def structured_chat(
         self, response_model, model_name, messages, temperature=0.0, top_p=1.0
     ):
-        response = self.openai_client.beta.chat.completions.parse(
+        response = await self.openai_client.beta.chat.completions.parse(
             model=model_name,
             messages=messages,
             response_format=response_model,
@@ -60,7 +56,23 @@ class OpenAIProvider(NLPInterface):
         msg = response.choices[0].message
         return msg.parsed
 
-    def text_to_speech(self, text):
+    async def stream_chat(
+        self, messages: list[dict], model_name: str, temperature=0.0, top_p=1.0
+    ):
+        kwargs = {
+            "model": model_name,
+            "messages": messages,
+            "stream": True,
+        }
+        if temperature:
+            kwargs["temperature"] = temperature
+            kwargs["top_p"] = top_p
+
+        response = await self.openai_client.chat.completions.create(**kwargs)
+        async for chunk in response:
+            yield chunk.choices[0].delta.content or ""
+
+    async def text_to_speech(self, text):
         cleaned_text = re.sub(r"[#*\-]\s?", "", text)
         speech_dir = "src/assets/audio/"
         speech_filename = str(uuid4()) + ".wav"
@@ -68,19 +80,19 @@ class OpenAIProvider(NLPInterface):
         os.makedirs(speech_dir, exist_ok=True)
 
         instructions = """Tone: The voice should be refined, formal, and delightfully theatrical, reminiscent of a charming radio announcer from the early 20th century.\n\nPacing: The speech should flow smoothly at a steady cadence, neither rushed nor sluggish, allowing for clarity and a touch of grandeur.\n\nPronunciation: Words should be enunciated crisply and elegantly, with an emphasis on vintage expressions and a slight flourish on key phrases.\n\nEmotion: The delivery should feel warm, enthusiastic, and welcoming, as if addressing a distinguished audience with utmost politeness.\n\nInflection: Gentle rises and falls in pitch should be used to maintain engagement, adding a playful yet dignified flair to each sentence.\n\nWord Choice: The script should incorporate vintage expressions like splendid, marvelous, posthaste, and ta-ta for now, avoiding modern slang."""
-        with self.openai_client.audio.speech.with_streaming_response.create(
+        async with self.openai_client.audio.speech.with_streaming_response.create(
             model="gpt-4o-mini-tts",
             voice="alloy",
             input=cleaned_text,
             instructions=instructions,
         ) as response:
-            response.stream_to_file(speech_file_path)
+            await response.stream_to_file(speech_file_path)
         url_path = "/" + speech_file_path.replace("\\", "/").split("src/", 1)[1]
         return url_path
 
-    def speech_to_text(self, audio_path):
+    async def speech_to_text(self, audio_path):
         audio_file = open(audio_path, "rb")
-        transcription = self.openai_client.audio.transcriptions.create(
+        transcription = await self.openai_client.audio.transcriptions.create(
             model="gpt-4o-transcribe", file=audio_file
         )
         return transcription.text

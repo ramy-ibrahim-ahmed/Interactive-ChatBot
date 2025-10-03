@@ -38,3 +38,8 @@ class NLPInterface(ABC):
 
     @abstractmethod
     def speech_to_text(self, audio_path: str) -> str: ...
+
+    @abstractmethod
+    async def stream_chat(
+        self, messages: list[dict], model_name: str, temperature=0.0, top_p=1.0
+    ): ...

@@ -6,10 +6,10 @@ class Settings(BaseSettings):
     OPENAI_API_KEY: str
     COHERE_API_KEY: str
     VECTORDB: str
-    # EMBEDDING_MODEL: str
     EMBEDDING_SIZE: int
     PINECONE_API_KEY: str
-    PINECONE_HOST: str
+    PINECONE_HOST_DENSE: str
+    PINECONE_HOST_SPARSE: str
     RERANKER_MODEL: str
     GEMINI_NAME: str
     GEMINI_API_KEYS: list[str]

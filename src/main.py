@@ -6,7 +6,7 @@ from fastapi.staticfiles import StaticFiles
 from .core.config import get_settings
 from .store.vectordb import VectorDBFactory
 from .store.nlp import NLPFactory
-from .api import api_router_v1
+from .routes.api import api_router as api_router_v1
 
 
 SETTINGS = get_settings()

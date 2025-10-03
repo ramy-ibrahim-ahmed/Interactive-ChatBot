@@ -1,5 +1,5 @@
 from typing import Literal
-from openai import OpenAI
+from openai import AsyncOpenAI
 from cohere import ClientV2
 from .interface import NLPInterface
 from .providers import OpenAIProvider, CohereProvider
@@ -9,10 +9,10 @@ from ...core.config import get_settings
 class NLPFactory:
     def create(provider: Literal["openai", "gemini", "cohere"]) -> NLPInterface:
         if provider.lower() == "openai":
-            openai_client = OpenAI(api_key=get_settings().OPENAI_API_KEY)
+            openai_client = AsyncOpenAI(api_key=get_settings().OPENAI_API_KEY)
             return OpenAIProvider(openai_client=openai_client)
         elif provider.lower() == "gemini":
-            openai_client = OpenAI(
+            openai_client = AsyncOpenAI(
                 api_key=get_settings().GEMINI_API_KEY,
                 base_url="https://generativelanguage.googleapis.com/v1beta/openai/",
             )

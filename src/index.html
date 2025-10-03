@@ -276,51 +276,91 @@
             }
         }
 
-        function addAudioButton(messageElement) {
-            const audioButton = document.createElement('button');
-            audioButton.classList.add('mt-2', 'flex', 'items-center', 'gap-1', 'text-blue-500', 'bg-transparent', 'border-2', 'border-blue-500', 'hover:bg-blue-100', 'hover:border-blue-600', 'hover:text-blue-600', 'px-3', 'py-1', 'rounded-lg', 'transition-colors', 'font-medium', 'text-sm');
-            audioButton.style.filter = 'url(#sketchy)';
-            audioButton.innerHTML = `
+        function addAudioPlayer(messageElement, audioUrl) {
+            const audioContainer = document.createElement('div');
+            audioContainer.classList.add('mt-2', 'flex', 'items-center', 'gap-1');
+
+            const audio = document.createElement('audio');
+            audio.src = audioUrl;
+
+            const playPauseButton = document.createElement('button');
+            playPauseButton.classList.add('flex', 'items-center', 'gap-1', 'text-blue-500', 'bg-transparent', 'border-2', 'border-blue-500', 'hover:bg-blue-100', 'hover:border-blue-600', 'hover:text-blue-600', 'px-3', 'py-1', 'rounded-lg', 'transition-colors', 'font-medium', 'text-sm');
+            playPauseButton.style.filter = 'url(#sketchy)';
+
+            const playIcon = `
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <polygon points="5 3 19 12 5 21 5 3"></polygon>
+                </svg>
+                تشغيل
+            `;
+            const pauseIcon = `
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="6" y="4" width="4" height="16"></rect>
+                    <rect x="14" y="4" width="4" height="16"></rect>
+                </svg>
+                إيقاف
+            `;
+
+            playPauseButton.innerHTML = playIcon;
+
+            playPauseButton.onclick = () => {
+                if (audio.paused) {
+                    audio.play().catch(e => console.error('Playback error:', e));
+                } else {
+                    audio.pause();
+                }
+            };
+
+            audio.onplay = () => {
+                setPersonaState('talking');
+                playPauseButton.innerHTML = pauseIcon;
+            };
+            audio.onpause = () => {
+                setPersonaState('idle');
+                playPauseButton.innerHTML = playIcon;
+            };
+            audio.onended = () => {
+                setPersonaState('idle');
+                playPauseButton.innerHTML = playIcon;
+            };
+            audio.onerror = () => {
+                setPersonaState('idle');
+                playPauseButton.innerHTML = playIcon;
+            };
+
+            audioContainer.appendChild(playPauseButton);
+            messageElement.appendChild(audioContainer);
+        }
+
+        function addGenerateTTSButton(messageElement) {
+            const generateButton = document.createElement('button');
+            generateButton.classList.add('mt-2', 'flex', 'items-center', 'gap-1', 'text-blue-500', 'bg-transparent', 'border-2', 'border-blue-500', 'hover:bg-blue-100', 'hover:border-blue-600', 'hover:text-blue-600', 'px-3', 'py-1', 'rounded-lg', 'transition-colors', 'font-medium', 'text-sm');
+            generateButton.style.filter = 'url(#sketchy)';
+            generateButton.innerHTML = `
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
                     <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path>
                 </svg>
                 استمع إلى الرد
             `;
-            audioButton.onclick = async () => {
+            generateButton.onclick = async () => {
                 const text = messageElement.dataset.originalText;
                 if (!text) return;
                 try {
-                    audioButton.disabled = true;
-                    audioButton.innerHTML = `<span class="animate-pulse">جاري التوليد...</span>`;
+                    generateButton.disabled = true;
+                    generateButton.innerHTML = `<span class="animate-pulse">جاري التوليد...</span>`;
                     const formData = new FormData();
                     formData.append('text', text);
                     const res = await fetch(ttsUrl, { method: 'POST', body: formData });
                     if (!res.ok) throw new Error('TTS failed');
                     const data = await res.json();
-                    const audio = new Audio(data.audio_path);
-                    audio.play().catch(e => console.error('Playback error:', e));
-                    audio.onplaying = () => setPersonaState('talking');
-                    audio.onended = () => {
-                        setPersonaState('idle');
-                        resetButton();
-                    };
-                    audio.onerror = () => resetButton();
-                    function resetButton() {
-                        audioButton.disabled = false;
-                        audioButton.innerHTML = `
-                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
-                                <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path>
-                            </svg>
-                            استمع إلى الرد
-                        `;
-                    }
+                    addAudioPlayer(messageElement, data.audio_path);
+                    generateButton.remove();
                 } catch (e) {
                     console.error('TTS error:', e);
                     alert('فشل في توليد الصوت.');
-                    audioButton.disabled = false;
-                    audioButton.innerHTML = `
+                    generateButton.disabled = false;
+                    generateButton.innerHTML = `
                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
                             <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path>
@@ -329,7 +369,15 @@
                     `;
                 }
             };
-            messageElement.appendChild(audioButton);
+            messageElement.appendChild(generateButton);
+        }
+
+        function addTTSControl(messageElement) {
+            if (messageElement.dataset.audioPath) {
+                addAudioPlayer(messageElement, messageElement.dataset.audioPath);
+            } else {
+                addGenerateTTSButton(messageElement);
+            }
         }
 
         function addMessageToChat(sender, message, returnElement = false) {
@@ -346,21 +394,28 @@
                     messageElement.innerHTML = '<span class="blinking-cursor"></span>';
                 } else {
                     messageElement.innerHTML = marked.parse(message);
-                    addAudioButton(messageElement);
                 }
                 messageElement.classList.add('bg-slate-200', 'text-slate-800');
-            } else {
-                messageElement.textContent = message;
-                messageElement.classList.add('chat-bubble-user');
-            }
 
-            if (isRTL(messageElement.textContent.trim())) {
+                // --- 1. ADD THESE TWO LINES ---
+                // This forces the bot's text to always be Right-to-Left.
                 messageElement.dir = 'rtl';
                 messageElement.classList.add('text-right');
-            } else {
-                messageElement.dir = 'ltr';
-                messageElement.classList.add('text-left');
+
+            } else { // This block is for the 'user'
+                messageElement.textContent = message;
+                messageElement.classList.add('chat-bubble-user');
+
+                // We keep the smart detection for the user's messages
+                if (isRTL(messageElement.textContent.trim())) {
+                    messageElement.dir = 'rtl';
+                    messageElement.classList.add('text-right');
+                } else {
+                    messageElement.dir = 'ltr';
+                    messageElement.classList.add('text-left');
+                }
             }
+
 
             messageWrapper.appendChild(messageElement);
             chatContainer.appendChild(messageWrapper);
@@ -373,8 +428,8 @@
             if (sender === 'user') {
                 lastUserMessage = messageElement;
             }
+            return messageElement;
         }
-
         function updateLastUserMessage(text) {
             if (lastUserMessage) {
                 lastUserMessage.textContent = text;
@@ -391,8 +446,17 @@
         };
 
         // --- ENHANCEMENT 3: Rewritten to update persona status directly ---
+        let partialResponse = '';
         function handleStreamEvent(data, botMessageElement) {
             const event = data.event;
+
+            if (event === 'transcribed') {
+                // Update the user message with the transcribed text immediately
+                if (isAudioInput && data.data.user_message) {
+                    updateLastUserMessage(data.data.user_message);
+                }
+                return;  // Exit early, as this is just for transcription display
+            }
 
             if (event === 'start_node') {
                 setPersonaState('thinking'); // Sets the thinking face, color, and fallback text
@@ -400,51 +464,47 @@
                 let statusText;
 
                 switch (node) {
-                    case 'classify_intent': statusText = 'فهم الطلب... 🤔'; break;
-                    case 'query_write': statusText = 'تحسين الاستفسار... ✍️'; break;
-                    case 'system_recognize': statusText = 'تحديد النظام... 🕵️'; break;
-                    case 'search': statusText = 'البحث في قاعدة المعرفة... 🔍'; break;
-                    case 'formate_search': statusText = 'تنسيق النتائج... 📋'; break;
-                    case 'analysis': statusText = 'تحليل النتائج... 📊'; break;
-                    case 'chat': statusText = 'تجهيز الرد... 💬'; break;
-                    case 'tts': statusText = 'توليد الصوت... 🔊'; break;
-                    default: statusText = 'جاري المعالجة...'; break;
+                    case 'classify_intent': statusText = '...فهم الطلب🤔'; break;
+                    case 'query_write': statusText = '...تحسين الاستفسار✍️'; break;
+                    case 'system_recognize': statusText = '...تحديد النظام'; break;
+                    case 'search': statusText = '...البحث في قاعدة المعرفة'; break;
+                    case 'formate_search': statusText = '...تنسيق النتائج'; break;
+                    case 'chat': statusText = '...يكتب'; break;
+                    default: statusText = '...جاري المعالجة'; break;
                 }
 
                 // Directly update the persona status text, overriding the default from setPersonaState
                 personaStatus.textContent = statusText;
 
+            } else if (event === 'stream_chunk') {
+                partialResponse += data.data.chunk;
+                botMessageElement.innerHTML = marked.parse(partialResponse);
+                chatContainer.scrollTop = chatContainer.scrollHeight;  // Scroll during streaming
+
             } else if (event === 'final_answer') {
                 const finalData = data.data;
-                if (isAudioInput && finalData.user_message) {
-                    updateLastUserMessage(finalData.user_message);
-                }
-                botMessageElement.dataset.originalText = finalData.answer || "لم أتمكن من إيجاد إجابة.";
-                botMessageElement.innerHTML = marked.parse(finalData.answer || "لم أتمكن من إيجاد إجابة.");
-                addAudioButton(botMessageElement);
+                // Note: We no longer need to update user_message here for audio, as it's handled in 'transcribed'
+                botMessageElement.dataset.originalText = partialResponse || finalData.answer || "عذرا يرجى اعادة المحاولة!";
+                botMessageElement.dataset.audioPath = finalData.audio_path || '';
+                botMessageElement.innerHTML = marked.parse(botMessageElement.dataset.originalText);
+                addTTSControl(botMessageElement);
+                setPersonaState('idle');
+                partialResponse = '';  // Reset for next message
 
-                const audioUrl = finalData.audio_path;
-                if (audioUrl) {
-                    const audio = new Audio(audioUrl);
-                    audio.play().catch(e => console.error('Audio playback error:', e));
-                    audio.onplaying = () => setPersonaState('talking');
-                    audio.onended = () => setPersonaState('idle');
-                } else {
-                    setPersonaState('idle');
-                }
             } else if (event === 'error') {
                 botMessageElement.innerHTML = marked.parse(`حدث خطأ: ${data.message}`);
                 setPersonaState('error');
                 setTimeout(() => setPersonaState('idle'), 4000);
+                partialResponse = '';
             }
         }
-
         async function callChatbotAPI(prompt = null, audioBlob = null) {
             isLoading = true;
             setPersonaState('thinking');
             sendButton.disabled = true;
             chatInput.disabled = true;
             micButton.disabled = true;
+            partialResponse = '';  // Reset here
 
             const botMessageElement = addMessageToChat('bot', '...', true);
 
@@ -545,12 +605,13 @@
         });
 
         // Initial welcome message
-        window.addEventListener('load', () => {
-            setPersonaState('idle');
-            setTimeout(() => {
-                addMessageToChat('bot', "مرحبا! أنا برهوما، جاهز للإجابة على أسئلتك. ما هو سؤالك؟");
-            }, 500);
-        });
+        // window.addEventListener('load', () => {
+        //     setPersonaState('idle');
+        //     setTimeout(() => {
+        //         const welcomeElement = addMessageToChat('bot', "مرحبا! أنا برهوما، جاهز للإجابة على أسئلتك. ما هو سؤالك؟");
+        //         addGenerateTTSButton(welcomeElement);
+        //     }, 500);
+        // });
 
     </script>
 </body>

@@ -4,9 +4,9 @@ import asyncio
 import tempfile
 from fastapi import APIRouter, Request, File, UploadFile, HTTPException, Form
 from fastapi.responses import StreamingResponse, JSONResponse
-from ....store.nlp import NLPInterface
-from ....store.vectordb import VectorDBInterface
-from ....graph import init_workflow
+from ...store.nlp import NLPInterface
+from ...store.vectordb import VectorDBInterface
+from ...graph import init_workflow
 
 router = APIRouter(
     prefix="/chat",
@@ -28,6 +28,13 @@ async def stream_events(workflow, user_message: str):
                 yield f"data: {json.dumps(event_data)}\n\n"
                 await asyncio.sleep(0.1)
 
+            elif kind == "on_chain_stream" and name == "chat":
+                chunk = event["data"].get("chunk")
+                if chunk:
+                    event_data = {"event": "stream_chunk", "data": chunk}
+                    yield f"data: {json.dumps(event_data)}\n\n"
+                    await asyncio.sleep(0.01)
+
             elif kind == "on_chain_end" and name == "LangGraph":
                 final_state = event["data"]["output"]
 
@@ -36,7 +43,6 @@ async def stream_events(workflow, user_message: str):
 
                 final_payload = {
                     "answer": final_state.get("response"),
-                    "analysis": final_state.get("analysis"),
                     "enhanced_query": (
                         enhanced_query.dict()
                         if hasattr(enhanced_query, "dict")
@@ -48,7 +54,7 @@ async def stream_events(workflow, user_message: str):
                         else search_results
                     ),
                     "user_message": final_state.get("user_message"),
-                }  # Removed audio_path here to avoid auto-generation
+                }
 
                 event_data = {"event": "final_answer", "data": final_payload}
                 yield f"data: {json.dumps(event_data)}\n\n"
@@ -72,7 +78,7 @@ async def chat(
         with tempfile.NamedTemporaryFile(delete=False, suffix=".webm") as tmp:
             shutil.copyfileobj(audio.file, tmp)
             audio_path = tmp.name
-        transcribed = nlp_openai.speech_to_text(audio_path)
+        transcribed = await nlp_openai.speech_to_text(audio_path)
         user_message = transcribed
     elif query:
         user_message = query
@@ -81,16 +87,26 @@ async def chat(
 
     workflow = init_workflow(nlp_openai, nlp_gemini, nlp_cohere, vectordb)
 
-    return StreamingResponse(
-        stream_events(workflow, user_message), media_type="text/event-stream"
-    )
+    async def enhanced_stream_events():
+        if audio:
+            transcribed_event = {
+                "event": "transcribed",
+                "data": {"user_message": user_message},
+            }
+            yield f"data: {json.dumps(transcribed_event)}\n\n"
+            await asyncio.sleep(0.01)
+
+        async for event in stream_events(workflow, user_message):
+            yield event
+
+    return StreamingResponse(enhanced_stream_events(), media_type="text/event-stream")
 
 
 @router.post("/tts")
 async def generate_tts(request: Request, text: str = Form()):
     nlp_openai: NLPInterface = request.app.state.nlp_openai
     try:
-        audio_path = nlp_openai.text_to_speech(text)
+        audio_path = await nlp_openai.text_to_speech(text)
         return JSONResponse({"audio_path": audio_path})
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"TTS generation failed: {str(e)}")

@@ -2,9 +2,9 @@ import os
 import logging
 import tempfile
 from fastapi import APIRouter, Request, UploadFile, File, HTTPException, Query
-from ....store.nlp import NLPInterface
-from ....store.vectordb import VectorDBInterface
-from ....services import ProcessService
+from ...store.nlp import NLPInterface
+from ...store.vectordb import VectorDBInterface
+from ...services import ProcessService
 
 
 logger = logging.getLogger(__name__)
