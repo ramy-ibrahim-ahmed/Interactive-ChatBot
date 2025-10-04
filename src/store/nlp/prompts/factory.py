@@ -19,6 +19,7 @@ class PromptFactory:
             "formate": self._load_prompt,
             "answer-one-step": self._load_prompt,
             "chunking_rewrite": self._load_prompt,
+            "chunk-hybird": self._load_prompt,
         }
 
     def get_prompt(
@@ -34,6 +35,7 @@ class PromptFactory:
             "formate",
             "answer-one-step",
             "chunking_rewrite",
+            "chunk-hybird",
         ],
     ) -> str:
         if prompt_type not in self.prompts:

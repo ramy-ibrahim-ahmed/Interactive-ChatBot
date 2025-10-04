@@ -4,7 +4,7 @@ import pyarabic.araby as araby
 from pinecone import Pinecone
 from pinecone_text.sparse import BM25Encoder
 from nltk.stem.isri import ISRIStemmer
-from ..core.config import get_settings
+from ...core.config import get_settings
 
 SETTINGS = get_settings()
 pc = Pinecone(api_key=SETTINGS.PINECONE_API_KEY, host=SETTINGS.PINECONE_HOST_SPARSE)
@@ -55,7 +55,7 @@ class ArabicBM25Encoder(BM25Encoder):
         return encoder
 
 
-bm25 = ArabicBM25Encoder.load("bm25_values.json")
+bm25 = ArabicBM25Encoder.load("bm25_values_v2.json")
 
 
 def search_keywords(query, top_k):
@@ -65,11 +65,7 @@ def search_keywords(query, top_k):
         sparse_vector=sparse_qv,
         top_k=top_k,
         include_metadata=True,
-        namespace="customers-sparse-v2",
+        namespace="customers_v2",  # customers-sparse-v2
     )
-    keywords = list()
-    for match in result["matches"]:
-        keywords.append(
-            {"topic_id": "dummy_keyword", "text": match["metadata"]["text"]}
-        )
+    keywords = [match["metadata"] for match in result["matches"]]
     return keywords

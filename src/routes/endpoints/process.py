@@ -1,4 +1,5 @@
 import os
+import json
 import logging
 import tempfile
 from fastapi import APIRouter, Request, UploadFile, File, HTTPException, Query
@@ -49,10 +50,18 @@ async def process_markdown(
             tmp.write(content)
             file_path = tmp.name
 
-        service.chunk(
-            file_path, separator, boundaries_list, num_toc_pages, collection_name
-        )
+        data = await service.chunk(file_path, separator, boundaries_list, num_toc_pages)
+        os.makedirs("output", exist_ok=True)
+        json_data = [item.model_dump() for item in data]
 
+        with open(f"output/{collection_name}.json", "w", encoding="utf-8") as f:
+            json.dump(json_data, f, indent=4, ensure_ascii=False)
+
+        flatten = list()
+        for many_chunk in data:
+            flatten.extend(many_chunk.chunks)
+
+        service.upsert(flatten, collection_name)
         return {"message": "Data processed and uploaded successfully"}
     finally:
         if os.path.exists(file_path):

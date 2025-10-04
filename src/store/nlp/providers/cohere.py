@@ -10,27 +10,14 @@ class CohereProvider(NLPInterface):
         response = self.cohere_client.rerank(
             model=model_name,
             query=query,
-            documents=[doc["text"] for doc in documents],
+            documents=documents,
             top_n=top_n,
         )
 
-        sorted_results = sorted(
-            response.results, key=lambda x: x.relevance_score, reverse=True
-        )[:top_n]
-
-        ranked = []
-        for item in sorted_results:
-            doc = documents[item.index]
-            ranked.append(
-                {
-                    "index": item.index,
-                    "score": float(item.relevance_score),
-                    "topic": doc["topic_id"],
-                    "text": doc["text"],
-                }
-            )
-
-        return ranked
+        return [
+            {"score": item.relevance_score, "text": {documents[item.index]}}
+            for item in response.results
+        ]
 
     def embed(
         self,

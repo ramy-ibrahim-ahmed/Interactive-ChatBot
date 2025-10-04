@@ -1,7 +1,7 @@
 from langgraph.graph import StateGraph, END
 from functools import partial
 from .state import State
-from .nodes import (
+from .agents import (
     query_node,
     search_node,
     formate_node,
@@ -19,9 +19,7 @@ def router_intent(state: State):
 
 def init_workflow(nlp_openai, nlp_gemini, nlp_cohere, vectordb, redis_client):
     query_agent = partial(query_node, nlp_openai=nlp_openai)
-    search_agent = partial(
-        search_node, nlp_openai=nlp_openai, nlp_cohere=nlp_cohere, vectordb=vectordb
-    )
+    search_agent = partial(search_node, nlp_cohere=nlp_cohere, vectordb=vectordb)
     formate_agent = formate_node
     chat_agent = partial(chat_node, nlp_openai=nlp_openai, redis_client=redis_client)
     intent_agent = partial(intent_node, nlp_openai=nlp_openai)

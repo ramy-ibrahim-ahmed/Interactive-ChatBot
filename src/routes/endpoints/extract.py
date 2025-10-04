@@ -29,7 +29,7 @@ async def convert_pdf_to_markdown(request: Request, pdf_file: UploadFile = File(
         if not pdf_bytes:
             raise HTTPException(status_code=400, detail="Empty PDF file")
 
-        md_content = service.process_pdf(pdf_bytes)
+        md_content = await service.process_pdf(pdf_bytes)
         if not md_content:
             raise HTTPException(
                 status_code=500, detail="Failed to generate Markdown content"

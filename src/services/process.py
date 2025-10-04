@@ -31,33 +31,26 @@ class ProcessService:
         out.pop(0)
         return ["\n\n---\n\n".join(map(str, sublist)) for sublist in out]
 
-    def chunk(
-        self,
-        file_path,
-        separator,
-        boundaries,
-        num_toc_pages,
-        collection_name: str,
-    ):
+    async def chunk(self, file_path, separator, boundaries, num_toc_pages):
         pages = self.split_md_file(file_path, separator)
         topics = self.split_at_boundaries(pages, boundaries, num_toc_pages)
-
-        for topic_id, topic in tqdm(
-            enumerate(topics), total=len(topics), desc="chunking"
-        ):
-            response = self.nlp.structured_chat(
+        all_chunks = list()
+        for topic in tqdm(topics, total=len(topics), desc="chunking"):
+            response = await self.nlp.structured_chat(
                 response_model=Chunks,
                 model_name="gpt-4.1",
                 messages=[
                     {
                         "role": OpenAIRolesEnum.SYSTEM.value,
-                        "content": PromptFactory().get_prompt("chunking_rewrite"),
+                        "content": PromptFactory().get_prompt("chunk-hybird"),
                     },
                     {"role": OpenAIRolesEnum.USER.value, "content": topic},
                 ],
             )
-            embeddings = self.nlp_cohere.embed(response.chunks, batch_size=10)
-            metadata = list()
-            for text in response.chunks:
-                metadata.append({"topic_id": topic_id + 1, "text": text})
-            self.vectordb.upsert(embeddings, metadata, collection_name, 100)
+            all_chunks.append(response)
+        return all_chunks
+
+    def upsert(self, chunks, collection_name):
+        embeddings = self.nlp_cohere.embed(chunks, batch_size=10)
+        metadata = [{"text": text} for text in chunks]
+        self.vectordb.upsert(embeddings, metadata, collection_name, 100)

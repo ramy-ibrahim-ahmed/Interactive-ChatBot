@@ -23,11 +23,11 @@ class MarkdownService:
         response = gemini.generate_content([prompt, pil_img])
         return response.text
 
-    def md_convert(self, page):
+    async def md_convert(self, page):
         markdown_rewrite_prompt = (
             "Produce markdown directly from the following text without additional tags."
         )
-        response = self.openai_nlp.chat(
+        response = await self.openai_nlp.chat(
             messages=[
                 {
                     "role": OpenAIRolesEnum.SYSTEM.value,
@@ -39,7 +39,7 @@ class MarkdownService:
         )
         return response.strip()
 
-    def process_pdf(self, pdf_bytes: bytes, zoom=2.0):
+    async def process_pdf(self, pdf_bytes: bytes, zoom=2.0):
         extracted = list()
         api_idx = 0
         pdf_document = fitz.open(stream=pdf_bytes, filetype="pdf")
@@ -61,7 +61,7 @@ class MarkdownService:
                 PromptFactory().get_prompt("vlm_markdown"),
                 self.gemini_name,
             )
-            final_text = self.md_convert(text_extracted)
+            final_text = await self.md_convert(text_extracted)
             extracted.append(final_text)
 
         pdf_document.close()

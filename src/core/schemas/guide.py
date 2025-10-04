@@ -3,7 +3,6 @@ from pydantic import BaseModel, Field
 
 class SearchResult(BaseModel):
     score: float
-    topic: str
     text: str
 
 
