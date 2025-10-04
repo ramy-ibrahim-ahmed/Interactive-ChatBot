@@ -18,7 +18,7 @@ router = APIRouter(
 async def stream_events(workflow, user_message: str):
     try:
         async for event in workflow.astream_events(
-            {"user_message": user_message}, version="v2"
+            {"user_message": user_message, "session_id": "123"}, version="v2"
         ):
             kind = event["event"]
             name = event["name"]
@@ -73,6 +73,7 @@ async def chat(
     nlp_openai: NLPInterface = request.app.state.nlp_openai
     nlp_gemini: NLPInterface = request.app.state.nlp_gemini
     nlp_cohere: NLPInterface = request.app.state.nlp_cohere
+    redis_client = request.app.state.redis_client
 
     if audio:
         with tempfile.NamedTemporaryFile(delete=False, suffix=".webm") as tmp:
@@ -85,7 +86,7 @@ async def chat(
     else:
         raise HTTPException(status_code=400, detail="Provide either query or audio")
 
-    workflow = init_workflow(nlp_openai, nlp_gemini, nlp_cohere, vectordb)
+    workflow = init_workflow(nlp_openai, nlp_gemini, nlp_cohere, vectordb, redis_client)
 
     async def enhanced_stream_events():
         if audio:

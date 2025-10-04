@@ -1,5 +1,6 @@
 import os
 from contextlib import asynccontextmanager
+import redis.asyncio as redis
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
@@ -15,6 +16,12 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    app.state.redis_client = redis.Redis(
+        host="localhost",
+        port=SETTINGS.REDIS_PORT,
+        decode_responses=True,
+        password=SETTINGS.REDIS_PASSWORD,
+    )
     app.state.nlp_openai = NLPFactory.create(provider="openai")
     app.state.nlp_gemini = NLPFactory.create(provider="gemini")
     app.state.nlp_cohere = NLPFactory.create(provider="cohere")

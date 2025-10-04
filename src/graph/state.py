@@ -12,3 +12,4 @@ class State(TypedDict):
     response: str
     intent: str
     analysis: str
+    session_id: str

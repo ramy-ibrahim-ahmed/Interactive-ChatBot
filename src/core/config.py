@@ -15,6 +15,8 @@ class Settings(BaseSettings):
     GEMINI_API_KEYS: list[str]
     PINECONE_INDEX: str
     GEMINI_API_KEY: str
+    REDIS_PORT: str
+    REDIS_PASSWORD: str
 
     class Config:
         env_file = ".env"
