@@ -8,6 +8,7 @@ from .agents import (
     chat_node,
     intent_node,
     system_node,
+    history_node,
 )
 
 
@@ -24,6 +25,7 @@ def init_workflow(nlp_openai, nlp_gemini, nlp_cohere, vectordb, redis_client):
     chat_agent = partial(chat_node, nlp_openai=nlp_openai, redis_client=redis_client)
     intent_agent = partial(intent_node, nlp_openai=nlp_openai)
     system_agent = partial(system_node, nlp_openai=nlp_openai)
+    history_agent = partial(history_node, redis_client=redis_client)
 
     workflow = StateGraph(State)
     workflow.add_node("classify_intent", intent_agent)
@@ -32,14 +34,18 @@ def init_workflow(nlp_openai, nlp_gemini, nlp_cohere, vectordb, redis_client):
     workflow.add_node("search", search_agent)
     workflow.add_node("formate_search", formate_agent)
     workflow.add_node("chat", chat_agent)
+    workflow.add_node("history", history_agent)
 
-    workflow.set_entry_point("classify_intent")
+    workflow.set_entry_point("history")
+    workflow.add_edge("history", "query_write")
+    
+    # workflow.add_edge("history", "classify_intent")
 
-    workflow.add_conditional_edges(
-        "classify_intent",
-        router_intent,
-        {"query_write": "query_write", END: END},
-    )
+    # workflow.add_conditional_edges(
+    #     "classify_intent",
+    #     router_intent,
+    #     {"query_write": "query_write", END: END},
+    # )
 
     workflow.add_edge("query_write", "system_recognize")
     workflow.add_edge("system_recognize", "search")

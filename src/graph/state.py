@@ -13,3 +13,4 @@ class State(TypedDict):
     intent: str
     analysis: str
     session_id: str
+    history: list[dict]

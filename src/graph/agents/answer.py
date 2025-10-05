@@ -14,18 +14,14 @@ async def chat_node(state: State, nlp_openai, redis_client):
     answer_prompt = PromptFactory().get_prompt("answer-one-step")
     user_message = state.get("user_message")
     formated_search = state.get("formated_search")
+    chat_history = state.get("history")
 
-    cached_history_str = await redis_client.lrange(cache_key, 0, 5)
-    chat_history = [json.loads(msg) for msg in reversed(cached_history_str)]
-
-    messages = [{"role": OpenAIRolesEnum.SYSTEM.value, "content": answer_prompt}]
-    messages.extend(chat_history)
-    messages.extend(
-        [
-            {"role": OpenAIRolesEnum.ASSISTANT.value, "content": formated_search},
-            {"role": OpenAIRolesEnum.USER.value, "content": user_message},
-        ]
-    )
+    messages = [
+        {"role": OpenAIRolesEnum.SYSTEM.value, "content": answer_prompt},
+        *chat_history,
+        {"role": OpenAIRolesEnum.ASSISTANT.value, "content": formated_search},
+        {"role": OpenAIRolesEnum.USER.value, "content": user_message},
+    ]
 
     model_name = "gpt-4.1"
     state["response"] = ""

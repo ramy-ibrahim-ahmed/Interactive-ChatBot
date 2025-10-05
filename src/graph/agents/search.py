@@ -17,8 +17,8 @@ def search_node(
 
     unique_chunks = {n["text"] for n in nearest}
     unique_chunks.update(k["text"] for k in keywords)
-
     unique_chunks_list = list(unique_chunks)
+
     reranked_nearest = nlp_cohere.rerank(
         query=enhanced_query.reranker_query,
         documents=unique_chunks_list,
