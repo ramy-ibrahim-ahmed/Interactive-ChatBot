@@ -33,6 +33,8 @@ async def lifespan(app: FastAPI):
 
     yield
     vectordb.disconnect()
+    await app.state.redis_client.flushdb()
+    await app.state.redis_client.close()
 
 
 app = FastAPI(
