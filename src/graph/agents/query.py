@@ -10,7 +10,7 @@ async def query_node(state: State, nlp_openai: NLPInterface) -> State:
     chat_history = state.get("history")
     messages = [
         {"role": OpenAIRolesEnum.SYSTEM.value, "content": prompt_query},
-        *chat_history,
+        # *chat_history,
         {"role": OpenAIRolesEnum.USER.value, "content": user_message},
     ]
     enhanced_query = await nlp_openai.structured_chat(

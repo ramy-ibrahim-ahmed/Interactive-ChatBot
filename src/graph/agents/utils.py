@@ -55,7 +55,7 @@ class ArabicBM25Encoder(BM25Encoder):
         return encoder
 
 
-bm25 = ArabicBM25Encoder.load("bm25_values_v2.json")
+bm25 = ArabicBM25Encoder.load("bm25_values_v3.json")
 
 
 def search_keywords(query, top_k):
@@ -65,7 +65,7 @@ def search_keywords(query, top_k):
         sparse_vector=sparse_qv,
         top_k=top_k,
         include_metadata=True,
-        namespace="customers_v2",  # customers-sparse-v2
+        namespace="customers_v3",  # customers-sparse-v2
     )
     keywords = [match["metadata"] for match in result["matches"]]
     return keywords
