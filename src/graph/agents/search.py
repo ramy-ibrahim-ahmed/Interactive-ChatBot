@@ -23,7 +23,7 @@ def search_node(
         query=enhanced_query.reranker_query,
         documents=unique_chunks_list,
         model_name="rerank-v3.5",
-        top_n=min(7, len(unique_chunks_list)),
+        top_n=min(3, len(unique_chunks_list)),
     )
 
     search_results = ManySearchResults(

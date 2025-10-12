@@ -23,6 +23,7 @@ async def chat_node(state: State, nlp_openai, redis_client):
         {"role": OpenAIRolesEnum.USER.value, "content": user_message},
     ]
 
+    # model_name = "qwen3:latest"
     model_name = "gpt-4.1"
     state["response"] = ""
     async for chunk in nlp_openai.stream_chat(messages, model_name):

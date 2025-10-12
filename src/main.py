@@ -25,6 +25,7 @@ async def lifespan(app: FastAPI):
     app.state.nlp_openai = NLPFactory.create(provider="openai")
     app.state.nlp_gemini = NLPFactory.create(provider="gemini")
     app.state.nlp_cohere = NLPFactory.create(provider="cohere")
+    app.state.nlp_ollama = NLPFactory.create(provider="ollama")
     vectordb_factory = VectorDBFactory()
     vectordb = vectordb_factory.create(provider="pinecone", settings=SETTINGS)
     vectordb.connect()

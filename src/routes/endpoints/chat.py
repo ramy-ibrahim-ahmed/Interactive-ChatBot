@@ -73,6 +73,7 @@ async def chat(
     nlp_openai: NLPInterface = request.app.state.nlp_openai
     nlp_gemini: NLPInterface = request.app.state.nlp_gemini
     nlp_cohere: NLPInterface = request.app.state.nlp_cohere
+    nlp_ollama: NLPInterface = request.app.state.nlp_ollama
     redis_client = request.app.state.redis_client
 
     if audio:
@@ -86,7 +87,9 @@ async def chat(
     else:
         raise HTTPException(status_code=400, detail="Provide either query or audio")
 
-    workflow = init_workflow(nlp_openai, nlp_gemini, nlp_cohere, vectordb, redis_client)
+    workflow = init_workflow(
+        nlp_openai, nlp_gemini, nlp_cohere, vectordb, redis_client, nlp_ollama
+    )
 
     async def enhanced_stream_events():
         if audio:
