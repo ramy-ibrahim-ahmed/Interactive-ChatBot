@@ -5,7 +5,7 @@ from tqdm import tqdm
 from .utils import arabic_tokenizer, preprocess_arabic
 
 
-class LexicalSearchTrainer:
+class LexicalTrainer:
     def __init__(self, api_key: str, host: str):
         pc = Pinecone(api_key=api_key)
         self.index = pc.Index(host=host)
@@ -48,7 +48,7 @@ class LexicalSearchTrainer:
                 {
                     "id": str(i),
                     "sparse_values": sparse_vector,
-                    "metadata": {"text": corpus[i]},  # Store original text in metadata
+                    "metadata": {"text": corpus[i]},
                 }
             )
 

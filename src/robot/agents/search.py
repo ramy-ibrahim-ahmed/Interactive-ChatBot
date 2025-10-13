@@ -20,7 +20,6 @@ async def search_node(
     lexical_results = lexical_search.search(
         enhanced_query.lexical_search_query, 20, "customers"
     )
-
     unique_chunks = {n["text"] for n in nearest}
     unique_chunks.update(k["text"] for k in lexical_results)
     unique_chunks_list = list(unique_chunks)

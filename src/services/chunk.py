@@ -50,8 +50,3 @@ class ProcessService:
             )
             all_chunks.append(response)
         return all_chunks
-
-    def upsert(self, chunks, collection_name):
-        embeddings = self.nlp_cohere.embed(chunks, batch_size=10)
-        metadata = [{"text": text} for text in chunks]
-        self.vectordb.upsert(embeddings, metadata, collection_name, 100)

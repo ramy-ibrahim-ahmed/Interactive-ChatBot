@@ -1,12 +1,9 @@
 import io
-import logging
 from fastapi import APIRouter, Request, UploadFile, File, HTTPException
 from fastapi.responses import StreamingResponse
 from ...store.nlp.interfaces import BaseGenerator
 from ...services import MarkdownService
 
-
-logger = logging.getLogger(__name__)
 
 router = APIRouter(
     prefix="/data",
@@ -25,6 +22,7 @@ async def convert_pdf_to_markdown(request: Request, pdf_file: UploadFile = File(
     service = MarkdownService(generator, settings)
 
     try:
+
         pdf_bytes = await pdf_file.read()
         if not pdf_bytes:
             raise HTTPException(status_code=400, detail="Empty PDF file")
@@ -39,6 +37,6 @@ async def convert_pdf_to_markdown(request: Request, pdf_file: UploadFile = File(
         filename = pdf_file.filename.replace(".pdf", ".md")
         headers = {"Content-Disposition": f"attachment; filename={filename}"}
         return StreamingResponse(buffer, media_type="text/markdown", headers=headers)
+
     except Exception as e:
-        logger.error(f"Error processing PDF: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Processing failed: {str(e)}")

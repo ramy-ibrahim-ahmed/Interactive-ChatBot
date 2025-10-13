@@ -17,7 +17,7 @@ router = APIRouter(
 )
 
 
-@router.post("/process")
+@router.post("/chunk")
 async def process_markdown(
     request: Request,
     md_file: UploadFile = File(...),
@@ -26,6 +26,7 @@ async def process_markdown(
     num_toc_pages: int = Query(...),
     collection_name: str = Query(...),
 ):
+
     if not md_file.filename.lower().endswith(".md"):
         raise HTTPException(status_code=400, detail="File must be a Markdown file")
 
@@ -35,6 +36,7 @@ async def process_markdown(
     service = ProcessService(generator, embeddings, vectordb)
 
     try:
+
         try:
             boundaries_list = [
                 int(x.strip()) for x in boundaries.split(",") if x.strip()
@@ -57,12 +59,7 @@ async def process_markdown(
         with open(f"output/{collection_name}.json", "w", encoding="utf-8") as f:
             json.dump(json_data, f, indent=4, ensure_ascii=False)
 
-        flatten = list()
-        for many_chunk in data:
-            flatten.extend(many_chunk.chunks)
-
-        service.upsert(flatten, collection_name)
-        return {"message": "Data processed and uploaded successfully"}
+        return {"message": "Data chunked successfully"}
     finally:
         if os.path.exists(file_path):
             os.remove(file_path)

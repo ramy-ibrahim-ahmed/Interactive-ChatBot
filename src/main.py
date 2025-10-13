@@ -7,6 +7,7 @@ from fastapi.staticfiles import StaticFiles
 from .core.config import get_settings
 from .store.semantic import VectorDBFactory
 from .store.lexical.search import LexicalSearch
+from .store.lexical.index import LexicalTrainer
 from .store.nlp import NLPFactory
 from .routes.api import api_router as api_router_v1
 
@@ -34,10 +35,15 @@ async def lifespan(app: FastAPI):
     vectordb.connect()
     app.state.vectordb = vectordb
 
+    # app.state.lexical_search = ...
     app.state.lexical_search = LexicalSearch(
         api_key=SETTINGS.PINECONE_API_KEY,
         host=SETTINGS.PINECONE_HOST_SPARSE,
         model_path=SETTINGS.PROB_MODEL_FILE,
+    )
+
+    app.state.lexical_trainer = LexicalTrainer(
+        api_key=SETTINGS.PINECONE_API_KEY, host=SETTINGS.PINECONE_HOST_SPARSE
     )
 
     app.state.settings = SETTINGS
