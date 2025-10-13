@@ -5,7 +5,8 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from .core.config import get_settings
-from .store.vectordb import VectorDBFactory
+from .store.semantic import VectorDBFactory
+from .store.lexical.search import LexicalSearch
 from .store.nlp import NLPFactory
 from .routes.api import api_router as api_router_v1
 
@@ -31,8 +32,14 @@ async def lifespan(app: FastAPI):
     vectordb_factory = VectorDBFactory()
     vectordb = vectordb_factory.create(provider="pinecone", settings=SETTINGS)
     vectordb.connect()
-
     app.state.vectordb = vectordb
+
+    app.state.lexical_search = LexicalSearch(
+        api_key=SETTINGS.PINECONE_API_KEY,
+        host=SETTINGS.PINECONE_HOST_SPARSE,
+        model_path=SETTINGS.PROB_MODEL_FILE,
+    )
+
     app.state.settings = SETTINGS
 
     yield

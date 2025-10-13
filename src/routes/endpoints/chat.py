@@ -6,7 +6,7 @@ import tempfile
 from typing import AsyncGenerator, Dict, Any
 from fastapi import APIRouter, Request, File, UploadFile, HTTPException, Form
 from fastapi.responses import StreamingResponse
-from ...graph import init_workflow
+from ...robot import init_workflow
 
 
 router = APIRouter(
@@ -75,6 +75,7 @@ async def chat(
     embeddings = request.app.state.embeddings
     reranker = request.app.state.reranker
     vectordb = request.app.state.vectordb
+    lexical_search = request.app.state.lexical_search
     cachedb = request.app.state.cachedb
     stt = request.app.state.stt
 
@@ -83,7 +84,9 @@ async def chat(
             status_code=400, detail="Either 'query' or 'audio' must be provided."
         )
 
-    workflow = init_workflow(generator, embeddings, reranker, vectordb, cachedb)
+    workflow = init_workflow(
+        generator, embeddings, reranker, vectordb, lexical_search, cachedb
+    )
 
     async def event_generator() -> AsyncGenerator[str, None]:
         user_message = query

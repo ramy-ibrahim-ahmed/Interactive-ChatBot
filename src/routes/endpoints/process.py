@@ -4,7 +4,7 @@ import logging
 import tempfile
 from fastapi import APIRouter, Request, UploadFile, File, HTTPException, Query
 from ...store.nlp.interfaces import BaseGenerator, BaseEmbeddings
-from ...store.vectordb import VectorDBInterface
+from ...store.semantic import VectorDBInterface
 from ...services import ProcessService
 
 

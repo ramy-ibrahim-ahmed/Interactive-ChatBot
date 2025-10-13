@@ -2,7 +2,7 @@
 
 from functools import lru_cache
 from ..store.nlp import NLPFactory, BaseNLP
-from ..store.vectordb import VectorDBFactory, BaseVectorDB
+from ..store.semantic import VectorDBFactory, BaseVectorDB
 from .config import get_settings
 
 # This dictionary will act as a simple in-memory cache for our clients.

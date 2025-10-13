@@ -1,8 +1,8 @@
 from ..state import State
 from ...store.nlp.interfaces import BaseEmbeddings, BaseReranker
-from ...store.vectordb import VectorDBInterface
+from ...store.semantic import VectorDBInterface
 from ...core.schemas.guide import ManySearchResults, SearchResult
-from .utils import search_keywords
+from ...store.lexical.search import LexicalSearch
 
 
 async def search_node(
@@ -10,16 +10,19 @@ async def search_node(
     embeddings: BaseEmbeddings,
     reranker: BaseReranker,
     vectordb: VectorDBInterface,
+    lexical_search: LexicalSearch,
 ) -> State:
     enhanced_query = state.get("enhanced_query")
     system_name = state.get("system_name")
 
     embeddings = await embeddings.embed(enhanced_query.semantic_queries)
     nearest = vectordb.query_chunks(embeddings, system_name, max_retrieved=20)
-    keywords = search_keywords(enhanced_query.lexical_search_query, 20)
+    lexical_results = lexical_search.search(
+        enhanced_query.lexical_search_query, 20, "customers"
+    )
 
     unique_chunks = {n["text"] for n in nearest}
-    unique_chunks.update(k["text"] for k in keywords)
+    unique_chunks.update(k["text"] for k in lexical_results)
     unique_chunks_list = list(unique_chunks)
 
     reranked_nearest = await reranker.rerank(

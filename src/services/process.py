@@ -2,7 +2,7 @@ from tqdm import tqdm
 from pathlib import Path
 from ..store.nlp import PromptFactory
 from ..store.nlp.interfaces import BaseGenerator
-from ..store.vectordb import VectorDBInterface
+from ..store.semantic import VectorDBInterface
 from ..core.schemas.guide import Chunks
 from ..core.enums import OpenAIRolesEnum
 

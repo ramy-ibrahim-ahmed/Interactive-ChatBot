@@ -18,10 +18,14 @@ def router_intent(state: State):
     return END
 
 
-def init_workflow(generator, embeddings, reranker, vectordb, cachedb):
+def init_workflow(generator, embeddings, reranker, vectordb, lexical_search, cachedb):
     query_agent = partial(query_node, generator=generator)
     search_agent = partial(
-        search_node, embeddings=embeddings, reranker=reranker, vectordb=vectordb
+        search_node,
+        embeddings=embeddings,
+        reranker=reranker,
+        vectordb=vectordb,
+        lexical_search=lexical_search,
     )
     formate_agent = formate_node
     chat_agent = partial(chat_node, generator=generator, cachedb=cachedb)

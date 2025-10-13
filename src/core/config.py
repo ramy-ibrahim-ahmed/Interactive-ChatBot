@@ -17,6 +17,7 @@ class Settings(BaseSettings):
     GEMINI_API_KEY: str
     REDIS_PORT: str
     REDIS_PASSWORD: str
+    PROB_MODEL_FILE: str
 
     class Config:
         env_file = ".env"
