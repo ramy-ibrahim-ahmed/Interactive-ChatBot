@@ -1,6 +1,7 @@
 from tqdm import tqdm
 from pathlib import Path
-from ..store.nlp import NLPInterface, PromptFactory
+from ..store.nlp import PromptFactory
+from ..store.nlp.interfaces import BaseGenerator
 from ..store.vectordb import VectorDBInterface
 from ..core.schemas.guide import Chunks
 from ..core.enums import OpenAIRolesEnum
@@ -8,7 +9,7 @@ from ..core.enums import OpenAIRolesEnum
 
 class ProcessService:
     def __init__(self, nlp, nlp_cohere, vectordb):
-        self.nlp: NLPInterface = nlp
+        self.nlp: BaseGenerator = nlp
         self.nlp_cohere = nlp_cohere
         self.vectordb: VectorDBInterface = vectordb
 

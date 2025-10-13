@@ -2,7 +2,7 @@ import io
 import logging
 from fastapi import APIRouter, Request, UploadFile, File, HTTPException
 from fastapi.responses import StreamingResponse
-from ...store.nlp import NLPInterface
+from ...store.nlp.interfaces import BaseGenerator
 from ...services import MarkdownService
 
 
@@ -20,9 +20,9 @@ async def convert_pdf_to_markdown(request: Request, pdf_file: UploadFile = File(
     if not pdf_file.filename.lower().endswith(".pdf"):
         raise HTTPException(status_code=400, detail="File must be a PDF")
 
-    nlp_openai: NLPInterface = request.app.state.nlp_openai
+    generator: BaseGenerator = request.app.state.generator
     settings = request.app.state.settings
-    service = MarkdownService(nlp_openai, settings)
+    service = MarkdownService(generator, settings)
 
     try:
         pdf_bytes = await pdf_file.read()

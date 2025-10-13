@@ -6,8 +6,6 @@ import tempfile
 from typing import AsyncGenerator, Dict, Any
 from fastapi import APIRouter, Request, File, UploadFile, HTTPException, Form
 from fastapi.responses import StreamingResponse
-from ...store.nlp import NLPInterface
-from ...store.vectordb import VectorDBInterface
 from ...graph import init_workflow
 
 
@@ -73,11 +71,12 @@ async def _stream_workflow_events(
 async def chat(
     request: Request, query: str = Form(None), audio: UploadFile = File(None)
 ):
-    generator: NLPInterface = request.app.state.generator
-    embeddings: NLPInterface = request.app.state.embeddings
-    reranker: NLPInterface = request.app.state.reranker
-    vectordb: VectorDBInterface = request.app.state.vectordb
+    generator = request.app.state.generator
+    embeddings = request.app.state.embeddings
+    reranker = request.app.state.reranker
+    vectordb = request.app.state.vectordb
     cachedb = request.app.state.cachedb
+    stt = request.app.state.stt
 
     if not query and not audio:
         raise HTTPException(
@@ -96,7 +95,7 @@ async def chat(
                     shutil.copyfileobj(audio.file, tmp)
                     audio_path = tmp.name
 
-                transcribed_text = await generator.speech_to_text(audio_path)
+                transcribed_text = await stt.speech_to_text(audio_path)
                 user_message = transcribed_text
 
                 transcribed_event = {
@@ -118,9 +117,9 @@ async def chat(
 
 @router.post("/tts")
 async def generate_tts(request: Request, text: str = Form()):
-    generator: NLPInterface = request.app.state.generator
+    tts = request.app.state.tts
     try:
-        audio_path = await generator.text_to_speech(text)
+        audio_path = await tts.text_to_speech(text)
         return {"audio_path": audio_path}
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"TTS generation failed: {str(e)}")

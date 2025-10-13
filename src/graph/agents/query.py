@@ -1,10 +1,11 @@
 from ..state import State
-from ...store.nlp import NLPInterface, PromptFactory
+from ...store.nlp import PromptFactory
+from ...store.nlp.interfaces import BaseGenerator
 from ...core.enums import OpenAIRolesEnum
 from ...core.schemas.guide import SearchQueries
 
 
-async def query_node(state: State, generator: NLPInterface) -> State:
+async def query_node(state: State, generator: BaseGenerator) -> State:
     prompt_query = PromptFactory().get_prompt("query_write")
     user_message = state.get("user_message")
     chat_history = state.get("history")

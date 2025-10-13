@@ -22,9 +22,11 @@ async def lifespan(app: FastAPI):
         decode_responses=True,
         password=SETTINGS.REDIS_PASSWORD,
     )
-    app.state.generator = NLPFactory.create(provider="gemini")
-    app.state.embeddings = NLPFactory.create(provider="cohere")
-    app.state.reranker = NLPFactory.create(provider="cohere")
+    app.state.generator = NLPFactory.create_generator(provider="gemini")
+    app.state.embeddings = NLPFactory.create_embeddings(provider="cohere")
+    app.state.reranker = NLPFactory.create_reranker(provider="cohere")
+    app.state.stt = NLPFactory.create_stt(provider="openai")
+    app.state.tts = NLPFactory.create_tts(provider="openai")
 
     vectordb_factory = VectorDBFactory()
     vectordb = vectordb_factory.create(provider="pinecone", settings=SETTINGS)

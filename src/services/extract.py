@@ -3,13 +3,14 @@ import google.generativeai as genai
 from PIL import Image as PILImage
 from io import BytesIO
 from tqdm import tqdm
-from ..store.nlp import NLPInterface, PromptFactory
+from ..store.nlp import PromptFactory
+from ..store.nlp.interfaces import BaseGenerator
 from ..core.enums import OpenAIRolesEnum
 
 
 class MarkdownService:
     def __init__(self, openai_nlp, settings):
-        self.openai_nlp: NLPInterface = openai_nlp
+        self.openai_nlp: BaseGenerator = openai_nlp
         self.gemini_name = settings.GEMINI_NAME
         self.gemini_api_keys = settings.GEMINI_API_KEYS
 

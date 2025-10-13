@@ -1,20 +1,20 @@
 from ..state import State
-from ...store.nlp import NLPInterface
+from ...store.nlp.interfaces import BaseEmbeddings, BaseReranker
 from ...store.vectordb import VectorDBInterface
 from ...core.schemas.guide import ManySearchResults, SearchResult
 from .utils import search_keywords
 
 
-def search_node(
+async def search_node(
     state: State,
-    embeddings: NLPInterface,
-    reranker: NLPInterface,
+    embeddings: BaseEmbeddings,
+    reranker: BaseReranker,
     vectordb: VectorDBInterface,
 ) -> State:
     enhanced_query = state.get("enhanced_query")
     system_name = state.get("system_name")
 
-    embeddings = embeddings.embed(enhanced_query.semantic_queries)
+    embeddings = await embeddings.embed(enhanced_query.semantic_queries)
     nearest = vectordb.query_chunks(embeddings, system_name, max_retrieved=20)
     keywords = search_keywords(enhanced_query.lexical_search_query, 20)
 
@@ -22,7 +22,7 @@ def search_node(
     unique_chunks.update(k["text"] for k in keywords)
     unique_chunks_list = list(unique_chunks)
 
-    reranked_nearest = reranker.rerank(
+    reranked_nearest = await reranker.rerank(
         query=enhanced_query.reranker_query,
         documents=unique_chunks_list,
         model_name="rerank-v3.5",

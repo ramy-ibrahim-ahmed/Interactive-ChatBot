@@ -3,7 +3,7 @@ import json
 import logging
 import tempfile
 from fastapi import APIRouter, Request, UploadFile, File, HTTPException, Query
-from ...store.nlp import NLPInterface
+from ...store.nlp.interfaces import BaseGenerator, BaseEmbeddings
 from ...store.vectordb import VectorDBInterface
 from ...services import ProcessService
 
@@ -29,10 +29,10 @@ async def process_markdown(
     if not md_file.filename.lower().endswith(".md"):
         raise HTTPException(status_code=400, detail="File must be a Markdown file")
 
-    nlp_openai: NLPInterface = request.app.state.nlp_openai
-    nlp_cohere: NLPInterface = request.app.state.nlp_cohere
+    generator: BaseGenerator = request.app.state.generator
+    embeddings: BaseEmbeddings = request.app.state.embeddings
     vectordb: VectorDBInterface = request.app.state.vectordb
-    service = ProcessService(nlp_openai, nlp_cohere, vectordb)
+    service = ProcessService(generator, embeddings, vectordb)
 
     try:
         try:

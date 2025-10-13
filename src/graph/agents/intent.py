@@ -1,9 +1,10 @@
 from ..state import State
-from ...store.nlp import NLPInterface, PromptFactory
+from ...store.nlp import PromptFactory
+from ...store.nlp.interfaces import BaseGenerator
 from ...core.enums import OpenAIRolesEnum
 
 
-async def intent_node(state: State, generator: NLPInterface):
+async def intent_node(state: State, generator: BaseGenerator):
     user_message = state.get("user_message")
     intent_prompt = PromptFactory().get_prompt("user_intent")
     chat_history = state.get("history")
