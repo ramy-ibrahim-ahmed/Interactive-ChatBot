@@ -16,26 +16,27 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    app.state.redis_client = redis.Redis(
+    app.state.cachedb = redis.Redis(
         host="localhost",
         port=SETTINGS.REDIS_PORT,
         decode_responses=True,
         password=SETTINGS.REDIS_PASSWORD,
     )
-    app.state.nlp_openai = NLPFactory.create(provider="openai")
-    app.state.nlp_gemini = NLPFactory.create(provider="gemini")
-    app.state.nlp_cohere = NLPFactory.create(provider="cohere")
-    app.state.nlp_ollama = NLPFactory.create(provider="ollama")
+    app.state.generator = NLPFactory.create(provider="gemini")
+    app.state.embeddings = NLPFactory.create(provider="cohere")
+    app.state.reranker = NLPFactory.create(provider="cohere")
+
     vectordb_factory = VectorDBFactory()
     vectordb = vectordb_factory.create(provider="pinecone", settings=SETTINGS)
     vectordb.connect()
+
     app.state.vectordb = vectordb
     app.state.settings = SETTINGS
 
     yield
     vectordb.disconnect()
-    await app.state.redis_client.flushdb()
-    await app.state.redis_client.close()
+    await app.state.cachedb.flushdb()
+    await app.state.cachedb.close()
 
 
 app = FastAPI(

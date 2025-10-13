@@ -4,7 +4,7 @@ from ...store.nlp import PromptFactory
 from ...core.enums import OpenAIRolesEnum
 
 
-async def chat_node(state: State, nlp_openai, redis_client):
+async def chat_node(state: State, generator, cachedb):
     session_id = state.get("session_id")
     if not session_id:
         raise ValueError("session_id must be provided in the state for caching.")
@@ -24,9 +24,9 @@ async def chat_node(state: State, nlp_openai, redis_client):
     ]
 
     # model_name = "qwen3:latest"
-    model_name = "gpt-4.1"
+    model_name = "gemini-2.5-pro"
     state["response"] = ""
-    async for chunk in nlp_openai.stream_chat(messages, model_name):
+    async for chunk in generator.stream_chat(messages, model_name):
         state["response"] += chunk
         yield {"chunk": chunk}
 
@@ -39,6 +39,6 @@ async def chat_node(state: State, nlp_openai, redis_client):
         "content": state["response"],
     }
 
-    await redis_client.lpush(cache_key, json.dumps(new_assistant_response_dict))
-    await redis_client.lpush(cache_key, json.dumps(new_user_message_dict))
-    await redis_client.ltrim(cache_key, 0, 5)
+    await cachedb.lpush(cache_key, json.dumps(new_assistant_response_dict))
+    await cachedb.lpush(cache_key, json.dumps(new_user_message_dict))
+    await cachedb.ltrim(cache_key, 0, 5)

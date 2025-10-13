@@ -18,14 +18,16 @@ def router_intent(state: State):
     return END
 
 
-def init_workflow(nlp_openai, nlp_gemini, nlp_cohere, vectordb, redis_client, nlp_ollama):
-    query_agent = partial(query_node, nlp_openai=nlp_openai)
-    search_agent = partial(search_node, nlp_cohere=nlp_cohere, vectordb=vectordb)
+def init_workflow(generator, embeddings, reranker, vectordb, cachedb):
+    query_agent = partial(query_node, generator=generator)
+    search_agent = partial(
+        search_node, embeddings=embeddings, reranker=reranker, vectordb=vectordb
+    )
     formate_agent = formate_node
-    chat_agent = partial(chat_node, nlp_openai=nlp_openai, redis_client=redis_client)
-    intent_agent = partial(intent_node, nlp_openai=nlp_openai)
-    system_agent = partial(system_node, nlp_openai=nlp_openai)
-    history_agent = partial(history_node, redis_client=redis_client)
+    chat_agent = partial(chat_node, generator=generator, cachedb=cachedb)
+    intent_agent = partial(intent_node, generator=generator)
+    system_agent = partial(system_node, generator=generator)
+    history_agent = partial(history_node, cachedb=cachedb)
 
     workflow = StateGraph(State)
     workflow.add_node("classify_intent", intent_agent)
@@ -38,7 +40,7 @@ def init_workflow(nlp_openai, nlp_gemini, nlp_cohere, vectordb, redis_client, nl
 
     workflow.set_entry_point("history")
     workflow.add_edge("history", "query_write")
-    
+
     # workflow.add_edge("history", "classify_intent")
 
     # workflow.add_conditional_edges(

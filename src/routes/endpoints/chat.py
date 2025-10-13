@@ -1,12 +1,15 @@
 import json
+import os
 import shutil
 import asyncio
 import tempfile
+from typing import AsyncGenerator, Dict, Any
 from fastapi import APIRouter, Request, File, UploadFile, HTTPException, Form
-from fastapi.responses import StreamingResponse, JSONResponse
+from fastapi.responses import StreamingResponse
 from ...store.nlp import NLPInterface
 from ...store.vectordb import VectorDBInterface
 from ...graph import init_workflow
+
 
 router = APIRouter(
     prefix="/chat",
@@ -15,7 +18,18 @@ router = APIRouter(
 )
 
 
-async def stream_events(workflow, user_message: str):
+def _format_sse_message(event_data: Dict[str, Any]) -> str:
+    return f"data: {json.dumps(event_data)}\n\n"
+
+
+def _serialize_if_needed(data: Any) -> Any:
+    return data.dict() if hasattr(data, "dict") else data
+
+
+async def _stream_workflow_events(
+    workflow, user_message: str
+) -> AsyncGenerator[str, None]:
+
     try:
         async for event in workflow.astream_events(
             {"user_message": user_message, "session_id": "123"}, version="v2"
@@ -25,92 +39,88 @@ async def stream_events(workflow, user_message: str):
 
             if kind == "on_chain_start" and name != "LangGraph":
                 event_data = {"event": "start_node", "node": name}
-                yield f"data: {json.dumps(event_data)}\n\n"
+                yield _format_sse_message(event_data)
                 await asyncio.sleep(0.1)
 
             elif kind == "on_chain_stream" and name == "chat":
-                chunk = event["data"].get("chunk")
-                if chunk:
+                if chunk := event["data"].get("chunk"):
                     event_data = {"event": "stream_chunk", "data": chunk}
-                    yield f"data: {json.dumps(event_data)}\n\n"
+                    yield _format_sse_message(event_data)
                     await asyncio.sleep(0.01)
 
             elif kind == "on_chain_end" and name == "LangGraph":
                 final_state = event["data"]["output"]
-
-                enhanced_query = final_state.get("enhanced_query")
-                search_results = final_state.get("search_results")
-
                 final_payload = {
                     "answer": final_state.get("response"),
-                    "enhanced_query": (
-                        enhanced_query.dict()
-                        if hasattr(enhanced_query, "dict")
-                        else enhanced_query
+                    "enhanced_query": _serialize_if_needed(
+                        final_state.get("enhanced_query")
                     ),
-                    "search_results": (
-                        search_results.dict()
-                        if hasattr(search_results, "dict")
-                        else search_results
+                    "search_results": _serialize_if_needed(
+                        final_state.get("search_results")
                     ),
                     "user_message": final_state.get("user_message"),
                 }
-
                 event_data = {"event": "final_answer", "data": final_payload}
-                yield f"data: {json.dumps(event_data)}\n\n"
+                yield _format_sse_message(event_data)
 
     except Exception as e:
         print(f"Error during streaming: {e}")
         error_data = {"event": "error", "message": str(e)}
-        yield f"data: {json.dumps(error_data)}\n\n"
+        yield _format_sse_message(error_data)
 
 
 @router.post("")
 async def chat(
     request: Request, query: str = Form(None), audio: UploadFile = File(None)
 ):
+    generator: NLPInterface = request.app.state.generator
+    embeddings: NLPInterface = request.app.state.embeddings
+    reranker: NLPInterface = request.app.state.reranker
     vectordb: VectorDBInterface = request.app.state.vectordb
-    nlp_openai: NLPInterface = request.app.state.nlp_openai
-    nlp_gemini: NLPInterface = request.app.state.nlp_gemini
-    nlp_cohere: NLPInterface = request.app.state.nlp_cohere
-    nlp_ollama: NLPInterface = request.app.state.nlp_ollama
-    redis_client = request.app.state.redis_client
+    cachedb = request.app.state.cachedb
 
-    if audio:
-        with tempfile.NamedTemporaryFile(delete=False, suffix=".webm") as tmp:
-            shutil.copyfileobj(audio.file, tmp)
-            audio_path = tmp.name
-        transcribed = await nlp_openai.speech_to_text(audio_path)
-        user_message = transcribed
-    elif query:
+    if not query and not audio:
+        raise HTTPException(
+            status_code=400, detail="Either 'query' or 'audio' must be provided."
+        )
+
+    workflow = init_workflow(generator, embeddings, reranker, vectordb, cachedb)
+
+    async def event_generator() -> AsyncGenerator[str, None]:
         user_message = query
-    else:
-        raise HTTPException(status_code=400, detail="Provide either query or audio")
+        audio_path = None
 
-    workflow = init_workflow(
-        nlp_openai, nlp_gemini, nlp_cohere, vectordb, redis_client, nlp_ollama
-    )
+        try:
+            if audio:
+                with tempfile.NamedTemporaryFile(delete=False, suffix=".webm") as tmp:
+                    shutil.copyfileobj(audio.file, tmp)
+                    audio_path = tmp.name
 
-    async def enhanced_stream_events():
-        if audio:
-            transcribed_event = {
-                "event": "transcribed",
-                "data": {"user_message": user_message},
-            }
-            yield f"data: {json.dumps(transcribed_event)}\n\n"
-            await asyncio.sleep(0.01)
+                transcribed_text = await generator.speech_to_text(audio_path)
+                user_message = transcribed_text
 
-        async for event in stream_events(workflow, user_message):
-            yield event
+                transcribed_event = {
+                    "event": "transcribed",
+                    "data": {"user_message": user_message},
+                }
+                yield _format_sse_message(transcribed_event)
+                await asyncio.sleep(0.01)
 
-    return StreamingResponse(enhanced_stream_events(), media_type="text/event-stream")
+            async for event in _stream_workflow_events(workflow, user_message):
+                yield event
+
+        finally:
+            if audio_path and os.path.exists(audio_path):
+                os.remove(audio_path)
+
+    return StreamingResponse(event_generator(), media_type="text/event-stream")
 
 
 @router.post("/tts")
 async def generate_tts(request: Request, text: str = Form()):
-    nlp_openai: NLPInterface = request.app.state.nlp_openai
+    generator: NLPInterface = request.app.state.generator
     try:
-        audio_path = await nlp_openai.text_to_speech(text)
-        return JSONResponse({"audio_path": audio_path})
+        audio_path = await generator.text_to_speech(text)
+        return {"audio_path": audio_path}
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"TTS generation failed: {str(e)}")

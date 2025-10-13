@@ -3,7 +3,7 @@ from ...store.nlp import NLPInterface, PromptFactory
 from ...core.enums import OpenAIRolesEnum
 
 
-async def intent_node(state: State, nlp_openai: NLPInterface):
+async def intent_node(state: State, generator: NLPInterface):
     user_message = state.get("user_message")
     intent_prompt = PromptFactory().get_prompt("user_intent")
     chat_history = state.get("history")
@@ -12,5 +12,5 @@ async def intent_node(state: State, nlp_openai: NLPInterface):
         *chat_history,
         {"role": OpenAIRolesEnum.USER.value, "content": user_message},
     ]
-    intent = await nlp_openai.chat(messages, "gpt-4.1-mini", temperature=0.0, top_p=1.0)
+    intent = await generator.chat(messages, "gemini-2.5-flash", temperature=0.0, top_p=1.0)
     return {"intent": intent}

@@ -6,12 +6,15 @@ from .utils import search_keywords
 
 
 def search_node(
-    state: State, nlp_cohere: NLPInterface, vectordb: VectorDBInterface
+    state: State,
+    embeddings: NLPInterface,
+    reranker: NLPInterface,
+    vectordb: VectorDBInterface,
 ) -> State:
     enhanced_query = state.get("enhanced_query")
     system_name = state.get("system_name")
 
-    embeddings = nlp_cohere.embed(enhanced_query.semantic_queries)
+    embeddings = embeddings.embed(enhanced_query.semantic_queries)
     nearest = vectordb.query_chunks(embeddings, system_name, max_retrieved=20)
     keywords = search_keywords(enhanced_query.lexical_search_query, 20)
 
@@ -19,7 +22,7 @@ def search_node(
     unique_chunks.update(k["text"] for k in keywords)
     unique_chunks_list = list(unique_chunks)
 
-    reranked_nearest = nlp_cohere.rerank(
+    reranked_nearest = reranker.rerank(
         query=enhanced_query.reranker_query,
         documents=unique_chunks_list,
         model_name="rerank-v3.5",

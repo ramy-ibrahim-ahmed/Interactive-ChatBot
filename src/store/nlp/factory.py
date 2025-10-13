@@ -7,7 +7,10 @@ from ...core.config import get_settings
 
 
 class NLPFactory:
-    def create(provider: Literal["openai", "gemini", "cohere"]) -> NLPInterface:
+    @staticmethod
+    def create(
+        provider: Literal["openai", "gemini", "ollama", "cohere"],
+    ) -> NLPInterface:
         if provider.lower() == "openai":
             openai_client = AsyncOpenAI(api_key=get_settings().OPENAI_API_KEY)
             return OpenAIProvider(openai_client=openai_client)
