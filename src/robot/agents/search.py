@@ -15,25 +15,37 @@ async def search_node(
     vectordb: VectorDBInterface,
     lexical_search: LexicalSearch,
 ) -> State:
-    enhanced_query = state.get("enhanced_query")
-    system_name = state.get("system_name")
 
-    embeddings = await embeddings.embed(
-        enhanced_query.semantic_queries, SETTINGS.EMBEDDING_MODEL
+    system_name = state.get("system_name")
+    queries_obj = state.get("enhanced_query")
+
+    semantic_queries = queries_obj.semantic_queries
+    lexical_query = queries_obj.lexical_search_query
+    reranker_query = queries_obj.reranker_query
+
+    embeddings = await embeddings.embed(semantic_queries, SETTINGS.EMBEDDING_MODEL)
+
+    nearest_semantic = vectordb.query_chunks(
+        embeddings,
+        system_name,
+        SETTINGS.SEMANTIC_TOP_K,
     )
-    nearest = vectordb.query_chunks(embeddings, system_name, SETTINGS.SEMANTIC_TOP_K)
-    lexical_results = lexical_search.search(
-        enhanced_query.lexical_search_query, SETTINGS.LEXICAL_TOP_K, "customers"
+
+    nearest_lexical = lexical_search.search(
+        lexical_query,
+        SETTINGS.LEXICAL_TOP_K,
+        system_name,
     )
-    unique_chunks = {n["text"] for n in nearest}
-    unique_chunks.update(k["text"] for k in lexical_results)
+
+    unique_chunks = {n["text"] for n in nearest_semantic}
+    unique_chunks.update(k["text"] for k in nearest_lexical)
     unique_chunks_list = list(unique_chunks)
 
     reranked_nearest = await reranker.rerank(
-        query=enhanced_query.reranker_query,
+        query=reranker_query,
         documents=unique_chunks_list,
         model_name=SETTINGS.RERANKER_MODEL,
-        top_n=min(SETTINGS.R, len(unique_chunks_list)),
+        top_n=min(SETTINGS.RERANKER_TOP_K, len(unique_chunks_list)),
     )
 
     search_results = ManySearchResults(
@@ -51,7 +63,8 @@ def formate_node(state: State) -> State:
     if not search_results or not search_results.results:
         return {"formated_search": ""}
 
-    search_as_text = "\n\n\n---\n\n\n".join(
+    search_as_text = "\n\n---\n\n".join(
         result.text for result in search_results.results
     )
+
     return {"formated_search": search_as_text}
