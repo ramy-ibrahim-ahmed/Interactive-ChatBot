@@ -3,6 +3,9 @@ from ...store.nlp import PromptFactory
 from ...store.nlp.interfaces import BaseGenerator
 from ...core.enums import OpenAIRolesEnum
 from ...core.schemas.guide import SearchQueries
+from ...core.config import get_settings
+
+SETTINGS = get_settings()
 
 
 async def query_node(state: State, generator: BaseGenerator) -> State:
@@ -15,6 +18,6 @@ async def query_node(state: State, generator: BaseGenerator) -> State:
         {"role": OpenAIRolesEnum.USER.value, "content": user_message},
     ]
     enhanced_query = await generator.structured_chat(
-        SearchQueries, "gemini-2.5-flash", messages
+        SearchQueries, SETTINGS.GENERATOR_LARGE, messages
     )
     return {"enhanced_query": enhanced_query}

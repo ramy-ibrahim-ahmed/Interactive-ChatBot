@@ -6,13 +6,15 @@ from tqdm import tqdm
 from ..store.nlp import PromptFactory
 from ..store.nlp.interfaces import BaseGenerator
 from ..core.enums import OpenAIRolesEnum
+from ..core.config import get_settings
+
+SETTINGS = get_settings()
 
 
 class MarkdownService:
-    def __init__(self, openai_nlp, settings):
-        self.openai_nlp: BaseGenerator = openai_nlp
-        self.gemini_name = settings.GEMINI_NAME
-        self.gemini_api_keys = settings.GEMINI_API_KEYS
+    def __init__(self, generator):
+        self.generator: BaseGenerator = generator
+        self.gemini_api_keys = SETTINGS.GEMINI_API_KEYS
 
     def ocr(self, image_bytes: bytes, gemini_api_key: str, prompt: str, model: str):
         pil_img = PILImage.open(BytesIO(image_bytes))
@@ -28,7 +30,7 @@ class MarkdownService:
         markdown_rewrite_prompt = (
             "Produce markdown directly from the following text without additional tags."
         )
-        response = await self.openai_nlp.chat(
+        response = await self.generator.chat(
             messages=[
                 {
                     "role": OpenAIRolesEnum.SYSTEM.value,
@@ -36,7 +38,7 @@ class MarkdownService:
                 },
                 {"role": OpenAIRolesEnum.USER.value, "content": page},
             ],
-            model_name="gpt-4.1-mini",
+            model_name=SETTINGS.GENERATOR_SMALL,
         )
         return response.strip()
 
@@ -60,8 +62,9 @@ class MarkdownService:
                 image_bytes,
                 self.gemini_api_keys[api_idx],
                 PromptFactory().get_prompt("vlm_markdown"),
-                self.gemini_name,
+                SETTINGS.GENERATOR_LARGE,
             )
+
             final_text = await self.md_convert(text_extracted)
             extracted.append(final_text)
 

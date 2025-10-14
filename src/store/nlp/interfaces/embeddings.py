@@ -5,5 +5,5 @@ class BaseEmbeddings(ABC):
 
     @abstractmethod
     def embed(
-        self, list_of_text: list[str], batch_size: int, model_name: str
+        self, list_of_text: list[str], model_name: str, batch_size: int
     ) -> list[list[float]]: ...

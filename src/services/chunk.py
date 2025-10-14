@@ -5,9 +5,12 @@ from ..store.nlp.interfaces import BaseGenerator
 from ..store.semantic import VectorDBInterface
 from ..core.schemas.guide import Chunks
 from ..core.enums import OpenAIRolesEnum
+from ..core.config import get_settings
+
+SETTINGS = get_settings()
 
 
-class ProcessService:
+class ChunkService:
     def __init__(self, nlp, nlp_cohere, vectordb):
         self.nlp: BaseGenerator = nlp
         self.nlp_cohere = nlp_cohere
@@ -39,7 +42,7 @@ class ProcessService:
         for topic in tqdm(topics, total=len(topics), desc="chunking"):
             response = await self.nlp.structured_chat(
                 response_model=Chunks,
-                model_name="gpt-4.1",
+                model_name=SETTINGS.GENERATOR_LARGE,
                 messages=[
                     {
                         "role": OpenAIRolesEnum.SYSTEM.value,

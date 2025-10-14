@@ -17,8 +17,8 @@ class OpenAIEmbeddings(BaseEmbeddings):
     async def embed(
         self,
         list_of_text: list[str],
-        batch_size=10,
         model_name="text-embedding-3-large",
+        batch_size=10,
     ) -> list[list[float]]:
 
         vectors = []
@@ -41,10 +41,9 @@ class CohereEmbeddings(BaseEmbeddings):
     async def embed(
         self,
         list_of_text: list[str],
-        batch_size=10,
         model_name="embed-v4.0",
+        batch_size=10,
     ) -> list[list[float]]:
-
         vectors = []
         for i in range(0, len(list_of_text), batch_size):
             batch = list_of_text[i : i + batch_size]
@@ -58,5 +57,4 @@ class CohereEmbeddings(BaseEmbeddings):
             batch_vectors = response.embeddings.float
             normalized = normalize_embeddings(batch_vectors)
             vectors.extend(normalized)
-
         return vectors

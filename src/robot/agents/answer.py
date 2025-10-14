@@ -2,6 +2,9 @@ import json
 from ..state import State
 from ...store.nlp import PromptFactory
 from ...core.enums import OpenAIRolesEnum
+from ...core.config import get_settings
+
+SETTINGS = get_settings()
 
 
 async def chat_node(state: State, generator, cachedb):
@@ -23,10 +26,8 @@ async def chat_node(state: State, generator, cachedb):
         {"role": OpenAIRolesEnum.USER.value, "content": user_message},
     ]
 
-    # model_name = "qwen3:latest"
-    model_name = "gemini-2.5-pro"
     state["response"] = ""
-    async for chunk in generator.stream_chat(messages, model_name):
+    async for chunk in generator.stream_chat(messages, SETTINGS.GENERATOR_LARGE):
         state["response"] += chunk
         yield {"chunk": chunk}
 
