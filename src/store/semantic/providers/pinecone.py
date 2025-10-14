@@ -11,7 +11,7 @@ class PineconeProvider(VectorDBInterface):
 
     def connect(self):
         self.client = Pinecone(api_key=self.settings.PINECONE_API_KEY)
-        index_name = self.settings.PINECONE_INDEX
+        index_name = self.settings.PINECONE_INDEX_DENSE
         if index_name not in self.client.list_indexes().names():
             self.client.create_index(
                 name=index_name,

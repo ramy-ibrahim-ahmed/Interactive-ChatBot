@@ -1,2 +1,2 @@
 from .extract import MarkdownService
-from .chunk import ProcessService
+from .chunk import ChunkService

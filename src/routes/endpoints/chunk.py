@@ -5,7 +5,7 @@ import tempfile
 from fastapi import APIRouter, Request, UploadFile, File, HTTPException, Query
 from ...store.nlp.interfaces import BaseGenerator, BaseEmbeddings
 from ...store.semantic import VectorDBInterface
-from ...services import ProcessService
+from ...services import ChunkService
 
 
 logger = logging.getLogger(__name__)
@@ -33,7 +33,7 @@ async def process_markdown(
     generator: BaseGenerator = request.app.state.generator
     embeddings: BaseEmbeddings = request.app.state.embeddings
     vectordb: VectorDBInterface = request.app.state.vectordb
-    service = ProcessService(generator, embeddings, vectordb)
+    service = ChunkService(generator, embeddings, vectordb)
 
     try:
 
