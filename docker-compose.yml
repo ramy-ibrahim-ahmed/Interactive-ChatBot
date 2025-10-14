@@ -3,7 +3,7 @@ services:
     build: ./server
     container_name: onyx-ix-guide-api
     restart: unless-stopped
-    command: python -m app.main
+    command: uv run python -m server.main
     env_file:
       - ./server/.env
     depends_on:

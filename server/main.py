@@ -21,7 +21,7 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 async def lifespan(app: FastAPI):
     nltk.download("stopwords")
     app.state.cachedb = redis.Redis(
-        host="localhost",
+        host="redis",
         port=SETTINGS.REDIS_PORT,
         decode_responses=True,
         password=SETTINGS.REDIS_PASSWORD,
