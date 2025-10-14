@@ -1,12 +1,29 @@
-version: '3.8'
-
 services:
-  redis:
-    image: redis:7-alpine
-    container_name: onyx-guide
+  fastapi:
+    build: ./server
+    container_name: onyx-ix-guide-api
+    restart: unless-stopped
+    command: python -m app.main
+    env_file:
+      - ./server/.env
+    depends_on:
+      - redis
+
+  nginx:
+    build:
+      context: .
+      dockerfile: ./nginx/Dockerfile
+    container_name: onyx-ix-engine
     restart: unless-stopped
     ports:
-      - "6379:6379"
+      - "80:80"
+    depends_on:
+      - fastapi
+
+  redis:
+    image: redis:7-alpine
+    container_name: onyx-ix-guide-redis
+    restart: unless-stopped
     volumes:
       - redis-data:/data
     command: redis-server --requirepass 36951

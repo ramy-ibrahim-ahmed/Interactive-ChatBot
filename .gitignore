@@ -11,4 +11,4 @@ wheels/
 .env
 
 # Custom
-assets/
+dev/

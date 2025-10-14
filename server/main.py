@@ -1,15 +1,16 @@
 import os
+import uvicorn
 from contextlib import asynccontextmanager
 import redis.asyncio as redis
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.staticfiles import StaticFiles
 from .core.config import get_settings
 from .store.semantic import VectorDBFactory
 from .store.lexical.search import LexicalSearch
 from .store.lexical.index import LexicalTrainer
 from .store.nlp import NLPFactory
 from .routes.api import api_router as api_router_v1
+import nltk
 
 
 SETTINGS = get_settings()
@@ -18,6 +19,7 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    nltk.download("stopwords")
     app.state.cachedb = redis.Redis(
         host="localhost",
         port=SETTINGS.REDIS_PORT,
@@ -35,7 +37,6 @@ async def lifespan(app: FastAPI):
     vectordb.connect()
     app.state.vectordb = vectordb
 
-    # app.state.lexical_search = ...
     app.state.lexical_search = LexicalSearch(
         api_key=SETTINGS.PINECONE_API_KEY,
         host=SETTINGS.PINECONE_HOST_SPARSE,
@@ -71,10 +72,6 @@ app.add_middleware(
 
 app.include_router(api_router_v1, prefix="/api/v1")
 
-app.mount(
-    "/assets",
-    StaticFiles(directory=os.path.join(BASE_DIR, "assets")),
-    name="assets",
-)
-
-app.mount("/", StaticFiles(directory=BASE_DIR, html=True), name="root")
+if __name__ == "__main__":
+    port = int(os.environ.get("APP_PORT", 8000))
+    uvicorn.run(app, host="0.0.0.0", port=port)

@@ -30,7 +30,7 @@ class Settings(BaseSettings):
     REDIS_PASSWORD: int
 
     class Config:
-        env_file = ".env"
+        env_file = "./server/.env"
         env_file_encoding = "utf-8"
 
 
