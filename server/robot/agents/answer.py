@@ -1,13 +1,17 @@
 import json
+import structlog
 from ..state import State
 from ...store.nlp import PromptFactory
 from ...core.enums import OpenAIRolesEnum
 from ...core.config import get_settings
 
 SETTINGS = get_settings()
+LOGGER = structlog.getLogger(__name__)
 
 
 async def chat_node(state: State, generator, cachedb):
+    LOGGER.info("We are here to create the answer", agent="Answer")
+
     session_id = state.get("session_id")
     if not session_id:
         raise ValueError("session_id must be provided in the state for caching.")

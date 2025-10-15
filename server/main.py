@@ -1,7 +1,9 @@
 import os
+import nltk
+import structlog
 import uvicorn
-from contextlib import asynccontextmanager
 import redis.asyncio as redis
+from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from .core.config import get_settings
@@ -10,9 +12,11 @@ from .store.lexical.search import LexicalSearch
 from .store.lexical.index import LexicalTrainer
 from .store.nlp import NLPFactory
 from .routes.api import api_router as api_router_v1
-import nltk
+from .core.logs import setup_logging
 
+setup_logging()
 
+LOGGER = structlog.getLogger(__name__)
 SETTINGS = get_settings()
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
@@ -51,12 +55,13 @@ async def lifespan(app: FastAPI):
         api_key=SETTINGS.PINECONE_API_KEY, host=SETTINGS.PINECONE_HOST_SPARSE
     )
 
-    app.state.settings = SETTINGS
+    LOGGER.info("APP init success")
 
     yield
     vectordb.disconnect()
     await app.state.cachedb.flushdb()
     await app.state.cachedb.close()
+    LOGGER.info("APP shut down success")
 
 
 app = FastAPI(
