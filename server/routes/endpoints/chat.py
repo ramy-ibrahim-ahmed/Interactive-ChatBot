@@ -1,10 +1,19 @@
-import json
 import os
+import json
 import shutil
 import asyncio
+import time
 import tempfile
 from typing import AsyncGenerator, Dict, Any
-from fastapi import APIRouter, Request, File, UploadFile, HTTPException, Form
+from fastapi import (
+    APIRouter,
+    Request,
+    File,
+    UploadFile,
+    HTTPException,
+    Form,
+    BackgroundTasks,
+)
 from fastapi.responses import StreamingResponse
 from ...robot import init_workflow
 
@@ -118,11 +127,25 @@ async def chat(
     return StreamingResponse(event_generator(), media_type="text/event-stream")
 
 
+def cleanup_file(path: str):
+    try:
+        time.sleep(60)
+        os.remove(path)
+        print(f"Cleaned up temp file: {path}")
+    except OSError as e:
+        print(f"Error cleaning up file {path}: {e}")
+
+
 @router.post("/tts")
-async def generate_tts(request: Request, text: str = Form()):
+async def generate_tts(
+    request: Request, background_tasks: BackgroundTasks, text: str = Form()
+):
     tts = request.app.state.tts
     try:
-        audio_path = await tts.text_to_speech(text)
-        return {"audio_path": audio_path}
+        url_path, full_file_path = await tts.text_to_speech(text)
+
+        background_tasks.add_task(cleanup_file, full_file_path)
+
+        return {"audio_path": url_path}
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"TTS generation failed: {str(e)}")

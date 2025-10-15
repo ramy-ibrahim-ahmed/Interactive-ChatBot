@@ -70,9 +70,9 @@ class NLPFactory:
             raise ValueError("Non-valid provider!")
 
     @staticmethod
-    def create_tts(provider: Literal["openai"]):
+    def create_tts(provider: Literal["openai"], temp_dir: str = "/server/temp_audio"):
         if provider.lower() == "openai":
             openai_client = _init_openai_wrapper(SETTINGS.OPENAI_API_KEY)
-            return OpenAITTS(openai_client=openai_client)
+            return OpenAITTS(openai_client=openai_client, temp_dir=temp_dir)
         else:
             raise ValueError("Non-valid provider!")

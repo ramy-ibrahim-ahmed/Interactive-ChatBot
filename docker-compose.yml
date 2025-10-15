@@ -2,6 +2,8 @@ services:
   fastapi:
     build: ./server
     container_name: onyx-ix-guide-api
+    volumes:
+      - temp-audio-data:/server/temp_audio
     restart: unless-stopped
     command: uv run python -m server.main
     env_file:
@@ -17,6 +19,8 @@ services:
     restart: unless-stopped
     ports:
       - "80:80"
+    volumes:
+      - temp-audio-data:/usr/share/nginx/html/temp-audio
     depends_on:
       - fastapi
 
@@ -30,3 +34,4 @@ services:
 
 volumes:
   redis-data:
+  temp-audio-data:
