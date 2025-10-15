@@ -3,7 +3,7 @@ from pathlib import Path
 from ..store.nlp import PromptFactory
 from ..store.nlp.interfaces import BaseGenerator
 from ..store.semantic import VectorDBInterface
-from ..core.schemas.guide import Chunks
+from ..core.schemas.search import Chunks
 from ..core.enums import OpenAIRolesEnum
 from ..core.config import get_settings
 

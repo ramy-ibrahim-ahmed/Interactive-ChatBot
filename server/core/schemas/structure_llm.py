@@ -1,16 +1,14 @@
 from pydantic import BaseModel, Field
+from typing import Literal
 
 
-class SearchResult(BaseModel):
-    score: float
-    text: str
+class Decision(BaseModel):
+    decision: Literal["__classify__", "__end__"] = Field(
+        ..., description="The vlaue which will decide where to go next."
+    )
 
 
-class ManySearchResults(BaseModel):
-    results: list[SearchResult]
-
-
-class SearchQueries(BaseModel):
+class Queries(BaseModel):
     semantic_queries: list[str] = Field(
         description="List of queries optimized for semantic search (embeddings-based), rephrasing and expanding the user question for better vector matching."
     )

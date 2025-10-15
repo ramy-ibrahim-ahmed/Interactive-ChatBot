@@ -1,0 +1,34 @@
+import structlog
+from ..state import State
+from ...store.nlp import PromptFactory
+from ...store.nlp.interfaces import BaseGenerator
+from ...core.enums import OpenAIRolesEnum
+from ...core.schemas import Queries
+from ...core.config import get_settings
+
+SETTINGS = get_settings()
+LOGGER = structlog.get_logger(__name__)
+
+
+async def QueriesAgent(state: State, generator: BaseGenerator) -> State:
+
+    instructions = PromptFactory().get_prompt("queries")
+    user_message = state.get("user_message")
+    history = state.get("history")
+
+    messages = [
+        {"role": OpenAIRolesEnum.SYSTEM.value, "content": instructions},
+        {"role": OpenAIRolesEnum.ASSISTANT.value, "content": history},
+        {"role": OpenAIRolesEnum.USER.value, "content": user_message},
+    ]
+
+    queries: Queries = await generator.structured_chat(
+        Queries, SETTINGS.GENERATOR_SMALL, messages
+    )
+
+    LOGGER.info(
+        f"Fusion: {len(queries.semantic_queries)} queries, Lexical: {1 if queries.lexical_search_query else 0} queries, Cross Encoder: {1 if queries.reranker_query else 0} queries",
+        agent="Queries",
+    )
+
+    return {"queries_obj": queries}

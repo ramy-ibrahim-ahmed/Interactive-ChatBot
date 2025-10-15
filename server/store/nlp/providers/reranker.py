@@ -1,5 +1,6 @@
-from ..interfaces import BaseReranker
 from cohere import AsyncClientV2
+from ..interfaces import BaseReranker
+from ....core.schemas import SearchResults, Result
 
 
 class CohereReranker(BaseReranker):
@@ -14,7 +15,9 @@ class CohereReranker(BaseReranker):
             top_n=top_n,
         )
 
-        return [
-            {"score": item.relevance_score, "text": {documents[item.index]}}
-            for item in response.results
-        ]
+        return SearchResults(
+            [
+                Result(score=item.relevance_score, text=documents[item.index])
+                for item in response.results
+            ]
+        )
