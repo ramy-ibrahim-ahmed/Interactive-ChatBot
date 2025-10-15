@@ -1,4 +1,5 @@
 import json
+from pathlib import Path
 from pinecone import Pinecone
 from pinecone_text.sparse import BM25Encoder
 from .utils import arabic_tokenizer, preprocess_arabic
@@ -38,6 +39,10 @@ class LexicalSearch:
     def __init__(self, api_key: str, host: str, model_path: str):
         pc = Pinecone(api_key=api_key)
         self.index = pc.Index(host=host)
+
+        BASE_DIR = Path(__file__).resolve().parent.parent.parent
+        model_path = (BASE_DIR / "models" / model_path).resolve()
+
         self.prob_model = self._ArabicBM25Encoder.load(model_path)
 
     def search(self, query: str, top_k: int, namespace: str) -> list[dict]:
