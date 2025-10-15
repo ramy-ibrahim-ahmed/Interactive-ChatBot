@@ -18,6 +18,6 @@ async def query_node(state: State, generator: BaseGenerator) -> State:
         {"role": OpenAIRolesEnum.USER.value, "content": user_message},
     ]
     enhanced_query = await generator.structured_chat(
-        SearchQueries, SETTINGS.GENERATOR_LARGE, messages
+        SearchQueries, SETTINGS.GENERATOR_SMALL, messages
     )
     return {"enhanced_query": enhanced_query}
