@@ -29,6 +29,12 @@ class Settings(BaseSettings):
     REDIS_PORT: int
     REDIS_PASSWORD: int
 
+    PROVIDER_GENERATOR: str
+    PROVIDER_EMBEDDINGS: str
+    PROVIDER_RERANKER: str
+    PROVIDER_STT: str
+    PROVIDER_TTS: str
+
     class Config:
         env_file = "./server/.env"
         env_file_encoding = "utf-8"
