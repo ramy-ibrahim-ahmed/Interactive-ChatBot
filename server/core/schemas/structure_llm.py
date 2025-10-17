@@ -3,7 +3,7 @@ from typing import Literal
 
 
 class Decision(BaseModel):
-    decision: Literal["__classify__", "__chat__", "__end__"] = Field(
+    decision: Literal["__classify__", "__chat__"] = Field(
         ..., description="The vlaue which will decide where to go next."
     )
 

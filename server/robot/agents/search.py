@@ -65,6 +65,4 @@ async def SearchAgent(
         for item in reranked_nearest.results
     )
 
-    LOGGER.info("Search pipeline end", agent="Search")
-
     return {"search": search_as_text}

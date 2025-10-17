@@ -34,7 +34,6 @@ def init_workflow(generator, embeddings, reranker, vectordb, lexical_search):
         {
             "__classify__": NodesEnum.CLASSIFY.value,
             "__chat__": NodesEnum.CHAT.value,
-            "__end__": END,
         },
     )
 
