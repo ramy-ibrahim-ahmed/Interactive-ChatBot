@@ -1,6 +1,8 @@
 import json
-import asyncio
+import structlog
 from typing import AsyncGenerator, Dict, Any
+
+LOGGER = structlog.get_logger(__name__)
 
 
 def _format_sse_message(event_data: Dict[str, Any]) -> str:
@@ -14,13 +16,9 @@ def _serialize_if_needed(data: Any) -> Any:
 async def stream_workflow_events(
     workflow, user_message: str, history: str
 ) -> AsyncGenerator[str, None]:
-    """
-    Streams events from the workflow, yielding them as SSE messages.
-    Captures the final AI response to be used for history update.
-    """
+
     final_response = None
     try:
-        # --- Pass history into the workflow's initial state ---
         async for event in workflow.astream_events(
             {
                 "user_message": user_message,
@@ -34,18 +32,15 @@ async def stream_workflow_events(
             if kind == "on_chain_start" and name != "LangGraph":
                 event_data = {"event": "start_node", "node": name}
                 yield _format_sse_message(event_data)
-                await asyncio.sleep(0.1)
 
             elif kind == "on_chain_stream" and name == "__chat__":
                 if chunk := event["data"].get("chunk"):
-                    event_data = {"event": "stream_chunk", "data": chunk}
-                    yield _format_sse_message(event_data)
-                    await asyncio.sleep(0.01)
+                    if chunk.get("chunk", ""):
+                        event_data = {"event": "stream_chunk", "data": chunk}
+                        yield _format_sse_message(event_data)
 
             elif kind == "on_chain_end" and name == "LangGraph":
                 final_state = event["data"]["output"]
-
-                # Capture the final response
                 final_response = final_state.get("response")
                 final_payload = {
                     "answer": final_response,

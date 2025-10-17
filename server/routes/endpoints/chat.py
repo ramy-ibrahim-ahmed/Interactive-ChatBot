@@ -1,7 +1,6 @@
 import os
 import json
 import shutil
-import asyncio
 import tempfile
 
 from typing import AsyncGenerator
@@ -13,6 +12,7 @@ from ...robot import init_workflow
 from ...services import ChatHistoryServie
 from ..background import update_chat_history_task
 from ..utils import stream_workflow_events, _format_sse_message
+
 
 router = APIRouter(
     prefix="/chat",
@@ -68,7 +68,6 @@ async def chat(
                     "data": {"user_message": user_message},
                 }
                 yield _format_sse_message(transcribed_event)
-                await asyncio.sleep(0.01)
 
             streamer = stream_workflow_events(
                 workflow, user_message, previous_summary or ""
@@ -88,7 +87,9 @@ async def chat(
 
             if user_message and final_ai_response:
                 search_str = (
-                    json.dumps(final_search_results) if final_search_results else ""
+                    json.dumps(final_search_results, ensure_ascii=False)
+                    if final_search_results
+                    else ""
                 )
 
                 background_tasks.add_task(
