@@ -13,12 +13,12 @@ SETTINGS = get_settings()
 
 def _init_openai_wrapper(api_key: str, base_url: Optional[str] = None):
     if base_url:
-        return AsyncOpenAI(api_key=api_key, base_url=base_url)
+        return AsyncOpenAI(api_key=api_key, base_url=base_url, timeout=300)
     return AsyncOpenAI(api_key=api_key)
 
 
 def _init_cohere_client(api_key: str):
-    return AsyncClientV2(api_key=api_key)
+    return AsyncClientV2(api_key=api_key, timeout=300)
 
 
 class NLPFactory:
