@@ -1,5 +1,4 @@
 import os
-import nltk
 import structlog
 import uvicorn
 import redis.asyncio as redis
@@ -23,7 +22,6 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    nltk.download("stopwords")
     app.state.cachedb = redis.Redis(
         host="redis",
         port=SETTINGS.REDIS_PORT,
