@@ -8,6 +8,13 @@ const mouth = document.getElementById('mouth');
 const sendButton = document.getElementById('send-button');
 const micButton = document.getElementById('mic-button');
 
+// Add this at the top of the script, after the DOM elements
+let sessionId = localStorage.getItem('chat_session_id');
+if (!sessionId) {
+    sessionId = crypto.randomUUID();
+    localStorage.setItem('chat_session_id', sessionId);
+}
+
 // Handle Enter to send and Shift+Enter for new line
 chatInput.addEventListener('keydown', (e) => {
     if (e.key === 'Enter' && !e.shiftKey) {
@@ -400,11 +407,11 @@ function handleStreamEvent(data, botMessageElement) {
         let statusText;
 
         switch (node) {
-            case 'classify_intent': statusText = '...فهم الطلب🤔'; break;
-            case 'query_write': statusText = '...تحسين الاستفسار✍️'; break;
-            case 'system_recognize': statusText = '...تحديد النظام🥱'; break;
-            case 'search': statusText = '...تحليل وتدقيق😙'; break;
-            case 'chat': statusText = '...يكتب😁'; break;
+            case '__classify__': statusText = '...فهم الطلب🤔'; break;
+            case '__queries__': statusText = '...تحسين الاستفسار✍️'; break;
+            case '__semantic__': statusText = '...تحديد النظام🥱'; break;
+            case '__search__': statusText = '...تحليل وتدقيق😙'; break;
+            case '__chat__': statusText = '...يكتب😁'; break;
             default: statusText = '...جاري المعالجة'; break;
         }
 
@@ -433,6 +440,7 @@ function handleStreamEvent(data, botMessageElement) {
         partialResponse = '';
     }
 }
+// Modify the callChatbotAPI function to include session_id in formData
 async function callChatbotAPI(prompt = null, audioBlob = null) {
     isLoading = true;
     setPersonaState('thinking');
@@ -445,6 +453,7 @@ async function callChatbotAPI(prompt = null, audioBlob = null) {
 
     try {
         const formData = new FormData();
+        formData.append('session_id', sessionId);  // Add session_id here
         if (audioBlob) {
             formData.append('audio', audioBlob, 'recording.webm');
         } else if (prompt) {
@@ -495,7 +504,6 @@ async function callChatbotAPI(prompt = null, audioBlob = null) {
         chatInput.focus();
     }
 }
-
 // Text input submit
 chatForm.addEventListener('submit', (e) => {
     e.preventDefault();

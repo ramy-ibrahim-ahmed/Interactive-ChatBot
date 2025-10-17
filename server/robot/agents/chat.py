@@ -8,23 +8,25 @@ SETTINGS = get_settings()
 LOGGER = structlog.getLogger(__name__)
 
 
-async def chat_node(state: State, generator):
+async def ChatAgent(state: State, generator):
 
     instructions = PromptFactory().get_prompt("chat")
     user_message = state.get("user_message")
-    search = state.get("search")
+    search = state.get("search", "No Search")
     history = state.get("history")
 
+    chat_history = "Chat History: " + history
+    LOGGER.info(chat_history)
+
+    retrieved = "Retrieved Context:\n\n" + search
     messages = [
         {"role": OpenAIRolesEnum.SYSTEM.value, "content": instructions},
-        {"role": OpenAIRolesEnum.ASSISTANT.value, "content": history},
-        {"role": OpenAIRolesEnum.ASSISTANT.value, "content": search},
+        {"role": OpenAIRolesEnum.ASSISTANT.value, "content": chat_history},
+        {"role": OpenAIRolesEnum.ASSISTANT.value, "content": retrieved},
         {"role": OpenAIRolesEnum.USER.value, "content": user_message},
     ]
 
     LOGGER.info("Streaming response...", agent="Chat")
 
-    state["response"] = ""
     async for chunk in generator.stream_chat(messages, SETTINGS.GENERATOR_LARGE):
-        state["response"] += chunk
         yield {"chunk": chunk}

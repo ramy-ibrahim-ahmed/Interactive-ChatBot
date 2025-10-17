@@ -16,7 +16,7 @@ class CohereReranker(BaseReranker):
         )
 
         return SearchResults(
-            [
+            results=[
                 Result(score=item.relevance_score, text=documents[item.index])
                 for item in response.results
             ]

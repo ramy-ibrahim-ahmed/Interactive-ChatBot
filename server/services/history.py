@@ -1,0 +1,39 @@
+import structlog
+import redis.asyncio as redis
+from typing import List, Dict, Any, Optional
+from ..store.nlp.interfaces.generator import BaseGenerator
+from ..core.config import get_settings
+
+SETTINGS = get_settings()
+LOGGER = structlog.get_logger(__name__)
+
+
+class ChatHistoryServie:
+    _CACHE_KEY_PREFIX = "chat_summary"
+
+    def __init__(self, cachedb: redis.Redis, generator: BaseGenerator):
+        self.cachedb = cachedb
+        self.generator = generator
+
+    def _get_cache_key(self, session_id: str) -> str:
+        return f"{self._CACHE_KEY_PREFIX}:{session_id}"
+
+    async def get_summary(self, session_id: str) -> Optional[str]:
+        cache_key = self._get_cache_key(session_id)
+        summary_bytes = await self.cachedb.get(cache_key)
+
+        if summary_bytes:
+            LOGGER.info(summary_bytes.decode("utf-8"))
+            return summary_bytes.decode("utf-8")
+
+        return None
+
+    async def update_summary(self, session_id: str, messages: List[Dict[str, Any]]):
+        new_summary = await self.generator.chat(messages, SETTINGS.GENERATOR_LARGE)
+        cache_key = self._get_cache_key(session_id)
+        LOGGER.info(new_summary)
+        await self.cachedb.set(cache_key, new_summary)
+
+    async def delete_summary(self, session_id: str) -> int:
+        cache_key = self._get_cache_key(session_id)
+        await self.cachedb.delete(cache_key)

@@ -19,7 +19,7 @@ async def SearchAgent(
 ) -> State:
 
     system_name = state.get("system_name")
-    queries_obj = state.get("queries_obj")
+    queries_obj = state.get("queries")
 
     semantic_queries = queries_obj.semantic_queries
     lexical_query = queries_obj.lexical_search_query

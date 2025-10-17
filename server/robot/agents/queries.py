@@ -16,9 +16,10 @@ async def QueriesAgent(state: State, generator: BaseGenerator) -> State:
     user_message = state.get("user_message")
     history = state.get("history")
 
+    chat_history = "Chat History: " + history
     messages = [
         {"role": OpenAIRolesEnum.SYSTEM.value, "content": instructions},
-        {"role": OpenAIRolesEnum.ASSISTANT.value, "content": history},
+        {"role": OpenAIRolesEnum.ASSISTANT.value, "content": chat_history},
         {"role": OpenAIRolesEnum.USER.value, "content": user_message},
     ]
 
@@ -31,4 +32,4 @@ async def QueriesAgent(state: State, generator: BaseGenerator) -> State:
         agent="Queries",
     )
 
-    return {"queries_obj": queries}
+    return {"queries": queries}

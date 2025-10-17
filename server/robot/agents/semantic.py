@@ -1,6 +1,4 @@
 import structlog
-from typing import Literal
-from langgraph.types import Command
 from ..state import State
 from ...store.nlp import PromptFactory
 from ...store.nlp.interfaces import BaseGenerator
@@ -12,17 +10,16 @@ LOGGER = structlog.getLogger(__name__)
 SETTINGS = get_settings()
 
 
-async def SemanticAgent(
-    state: State, generator: BaseGenerator
-) -> Command[Literal["__classify__", "__end__"]]:
+async def SemanticAgent(state: State, generator: BaseGenerator) -> State:
 
     user_message = state.get("user_message")
     instructions = PromptFactory().get_prompt("semantic")
     history = state.get("history")
 
+    chat_history = "Chat History: " + history
     messages = [
         {"role": OpenAIRolesEnum.SYSTEM.value, "content": instructions},
-        {"role": OpenAIRolesEnum.ASSISTANT.value, "content": history},
+        {"role": OpenAIRolesEnum.ASSISTANT.value, "content": chat_history},
         {"role": OpenAIRolesEnum.USER.value, "content": user_message},
     ]
 
@@ -32,4 +29,4 @@ async def SemanticAgent(
 
     LOGGER.info(f"Routed --> {decision.decision}", agent="Semantic")
 
-    return Command(goto=decision.decision)
+    return {"route": decision.decision}
