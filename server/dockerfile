@@ -6,6 +6,8 @@ RUN pip install uv
 
 COPY pyproject.toml uv.lock* ./
 
-COPY . ./server
-
 RUN uv sync --frozen --no-dev
+
+RUN python -m nltk.downloader stopwords
+
+COPY . ./server
