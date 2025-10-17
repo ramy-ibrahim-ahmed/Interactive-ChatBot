@@ -27,6 +27,6 @@ async def SemanticAgent(state: State, generator: BaseGenerator) -> State:
         Decision, SETTINGS.GENERATOR_SMALL, messages
     )
 
-    LOGGER.info(f"Routed --> {decision.decision}", agent="Semantic")
+    LOGGER.info(f"Routed --> {decision.decision}")
 
     return {"route": decision.decision}

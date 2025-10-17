@@ -26,32 +26,24 @@ async def SearchAgent(
     reranker_query = queries_obj.reranker_query
 
     # ----------------------- SEARCH PIPELINE -----------------------------#
-    LOGGER.info("Search pipeline started", agent="Search")
+    LOGGER.info("Search pipeline started")
 
     embeddings = await embeddings.embed(semantic_queries, SETTINGS.EMBEDDING_MODEL)
-    LOGGER.info("   1. Embedding success", agent="Search")
+    LOGGER.info(f"   1. Embedding success")
 
     nearest_semantic = vectordb.query_chunks(
         embeddings,
         system_name,
         SETTINGS.SEMANTIC_TOP_K,
     )
-    LOGGER.info(
-        "   2. Cosine similarity success",
-        agent="Search",
-        num_docs={len(nearest_semantic)},
-    )
+    LOGGER.info(f"   2. Cosine similarity returns {len(nearest_semantic)} queries")
 
     nearest_lexical = lexical_search.search(
         lexical_query,
         SETTINGS.LEXICAL_TOP_K,
         system_name,
     )
-    LOGGER.info(
-        "   3. Probabilistic success",
-        agent="Search",
-        num_docs={len(nearest_lexical)},
-    )
+    LOGGER.info(f"   3. Probabilistic returns {len(nearest_lexical)} queries")
 
     unique_chunks = {n["text"] for n in nearest_semantic}
     unique_chunks.update(k["text"] for k in nearest_lexical)
@@ -64,9 +56,7 @@ async def SearchAgent(
         top_n=min(SETTINGS.RERANKER_TOP_K, len(unique_chunks_list)),
     )
     LOGGER.info(
-        "   4. Cross encoder product success",
-        agent="Search",
-        num_docs={len(reranked_nearest.results)},
+        f"   4. Cross encoder product {len(unique_chunks_list)} into {len(reranked_nearest.results)} queries"
     )
     # ----------------------- SEARCH PIPELINE -----------------------------#
 

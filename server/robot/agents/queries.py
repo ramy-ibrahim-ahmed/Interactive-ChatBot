@@ -28,7 +28,7 @@ async def QueriesAgent(state: State, generator: BaseGenerator) -> State:
     )
 
     LOGGER.info(
-        f"Fusion: {len(queries.semantic_queries)} queries, Lexical: {1 if queries.lexical_search_query else 0} queries, Cross Encoder: {1 if queries.reranker_query else 0} queries",
+        f"Fusion: {len(queries.semantic_queries)}, Lexical: {1 if queries.lexical_search_query else 0}, Cross Encoder: {1 if queries.reranker_query else 0}",
         agent="Queries",
     )
 
