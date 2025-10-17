@@ -11,3 +11,4 @@ You are part of the chat history management pipeline. Your role is to convert an
 ## Notes
 
 Include relevant information to the summary as it may be useful for skipping the research part.
+Keep fields screens names and system definitions as it is in arabic.
