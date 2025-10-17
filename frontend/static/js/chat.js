@@ -546,12 +546,3 @@ micButton.addEventListener('click', async () => {
         micButton.classList.add('border-green-500', 'text-green-500', 'hover:bg-green-100', 'hover:border-green-700', 'hover:text-green-700');
     }
 });
-
-// Initial welcome message
-// window.addEventListener('load', () => {
-//     setPersonaState('idle');
-//     setTimeout(() => {
-//         const welcomeElement = addMessageToChat('bot', "مرحبا! أنا برهوما، جاهز للإجابة على أسئلتك. ما هو سؤالك؟");
-//         addGenerateTTSButton(welcomeElement);
-//     }, 500);
-// });
