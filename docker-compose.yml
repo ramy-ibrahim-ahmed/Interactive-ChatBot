@@ -8,6 +8,8 @@ services:
     command: uv run python -m server.main
     env_file:
       - ./server/.env
+    environment:
+      - OLLAMA_BASE_URL=http://host.docker.internal:11434/v1
     depends_on:
       - redis
 

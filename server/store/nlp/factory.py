@@ -1,3 +1,4 @@
+import os
 from typing import Literal, Optional
 from openai import AsyncOpenAI
 from cohere import AsyncClientV2
@@ -47,8 +48,10 @@ class NLPFactory:
             return OpenAIWrapperGenerator(client=gemini_client)
         elif provider.lower() == "ollama":
             ollama_client = _init_openai_wrapper(
-                api_key="ollama", base_url="http://localhost:11434/v1"
+                api_key="ollama",
+                base_url=os.getenv("OLLAMA_BASE_URL", "http://localhost:11434/v1"),
             )
+
             return OpenAIWrapperGenerator(client=ollama_client)
         else:
             raise ValueError("Non-valid provider!")
