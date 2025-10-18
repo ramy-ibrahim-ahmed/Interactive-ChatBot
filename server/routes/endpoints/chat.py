@@ -3,7 +3,7 @@ import json
 import shutil
 import tempfile
 
-from typing import AsyncGenerator
+from typing import AsyncGenerator, Literal
 from fastapi import APIRouter, Request, HTTPException, Form, BackgroundTasks
 from fastapi import File, UploadFile
 from fastapi.responses import StreamingResponse
@@ -28,9 +28,11 @@ async def chat(
     session_id: str = Form("default-session"),
     query: str = Form(None),
     audio: UploadFile = File(None),
+    provider: Literal["gemini", "openai", "ollama"] = Form("gemini"),
 ):
 
-    generator = request.app.state.generator
+    generators = request.app.state.generators
+    generator = generators.get(provider, generators["gemini"])
     embeddings = request.app.state.embeddings
     reranker = request.app.state.reranker
     vectordb = request.app.state.vectordb

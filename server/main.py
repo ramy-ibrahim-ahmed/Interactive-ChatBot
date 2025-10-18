@@ -28,9 +28,11 @@ async def lifespan(app: FastAPI):
         decode_responses=True,
         password=SETTINGS.REDIS_PASSWORD,
     )
-    app.state.generator = NLPFactory.create_generator(
-        provider=SETTINGS.PROVIDER_GENERATOR
-    )
+    app.state.generators = {
+        "openai": NLPFactory.create_generator(provider="openai"),
+        "cohere": NLPFactory.create_generator(provider="ollama"),
+        "gemini": NLPFactory.create_generator(provider="gemini"),
+    }
     app.state.embeddings = NLPFactory.create_embeddings(
         provider=SETTINGS.PROVIDER_EMBEDDINGS
     )

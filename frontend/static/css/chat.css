@@ -107,3 +107,8 @@ input[type="range"]::-webkit-slider-runnable-track {
     height: 4px;
     border-radius: 4px;
 }
+
+/* Custom Select Styles */
+select#provider {
+    filter: url(#sketchy);
+}

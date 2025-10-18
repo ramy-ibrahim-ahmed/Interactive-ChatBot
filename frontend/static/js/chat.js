@@ -7,6 +7,7 @@ const eyes = document.getElementById('eyes');
 const mouth = document.getElementById('mouth');
 const sendButton = document.getElementById('send-button');
 const micButton = document.getElementById('mic-button');
+const providerSelect = document.getElementById('provider');
 
 // Add this at the top of the script, after the DOM elements
 let sessionId = localStorage.getItem('chat_session_id');
@@ -454,6 +455,7 @@ async function callChatbotAPI(prompt = null, audioBlob = null) {
     try {
         const formData = new FormData();
         formData.append('session_id', sessionId);  // Add session_id here
+        formData.append('provider', providerSelect.value);  // Add selected provider
         if (audioBlob) {
             formData.append('audio', audioBlob, 'recording.webm');
         } else if (prompt) {
