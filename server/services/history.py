@@ -3,8 +3,10 @@ from typing import List, Dict, Any, Optional
 from ..store.nlp.interfaces.generator import BaseGenerator
 from ..core.config import get_settings
 from ..core.enums import ModelSizes
+import structlog
 
 SETTINGS = get_settings()
+LOGGER = structlog.get_logger(__name__)
 
 
 class ChatHistoryServie:
@@ -28,6 +30,8 @@ class ChatHistoryServie:
 
     async def update_summary(self, session_id: str, messages: List[Dict[str, Any]]):
         new_summary = await self.generator.chat(messages, ModelSizes.HISTORY.value)
+        if new_summary:
+            LOGGER.info("History updated")
         cache_key = self._get_cache_key(session_id)
         await self.cachedb.set(cache_key, new_summary)
 
