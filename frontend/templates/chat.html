@@ -53,18 +53,29 @@
             <div class="flex-1 p-6 overflow-y-auto space-y-4" id="chat-container">
             </div>
             <div class="p-4 bg-white border-t border-slate-200">
-                <div class="flex justify-end mb-2 dir-rtl">
-                    <select id="provider"
-                        class="bg-transparent border-2 border-blue-500 text-blue-500 px-2 py-1 rounded-lg text-sm font-medium hover:bg-blue-100 hover:border-blue-600 hover:text-blue-600 transition-colors">
-                        <option value="gemini">Gemini</option>
-                        <option value="openai">OpenAI</option>
-                        <option value="ollama">Ollama</option>
-                    </select>
-                </div>
                 <form id="chat-form" class="flex items-end space-x-3">
-                    <textarea id="chat-input" rows="3" placeholder="اكتب سؤالك هنا..."
-                        class="flex-1 p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none transition resize-none text-right bg-white"
-                        dir="rtl" autocomplete="off"></textarea>
+                    <div class="relative flex-1">
+                        <textarea id="chat-input" rows="3" placeholder="اكتب سؤالك هنا..."
+                            class="w-full flex-1 p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none transition resize-none text-right bg-white"
+                            dir="rtl" autocomplete="off"></textarea>
+                        <div class="absolute top-2 left-2">
+                            <div class="relative inline-block">
+                                <button id="provider-button"
+                                    class="bg-transparent border border-blue-300 text-blue-300 px-2 py-1 rounded-lg text-xs font-normal hover:bg-blue-50 hover:border-blue-400 hover:text-blue-400 transition-colors min-w-[80px]"
+                                    style="filter: url(#sketchy);">Gemini</button>
+                                <ul id="provider-menu"
+                                    class="absolute bottom-full left-0 mb-1 hidden bg-white border border-blue-300 rounded-lg shadow-lg min-w-[80px] z-10 overflow-hidden"
+                                    style="filter: url(#sketchy);">
+                                    <li class="px-2 py-1 hover:bg-blue-50 cursor-pointer text-blue-300 text-xs font-normal"
+                                        data-value="gemini">Gemini</li>
+                                    <li class="px-2 py-1 hover:bg-blue-50 cursor-pointer text-blue-300 text-xs font-normal"
+                                        data-value="openai">OpenAI</li>
+                                    <li class="px-2 py-1 hover:bg-blue-50 cursor-pointer text-blue-300 text-xs font-normal"
+                                        data-value="ollama">Ollama</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
 
                     <button type="button" id="mic-button"
                         class="bg-transparent border-2 border-green-500 hover:bg-green-100 hover:border-green-700 hover:text-green-700 text-green-500 font-bold p-3 rounded-full shadow-lg transition-all duration-200 ease-in-out active:scale-95 flex items-center justify-center w-12 h-12"

@@ -37,22 +37,24 @@ class NLPFactory:
 
     @staticmethod
     def create_generator(provider: Literal["openai", "gemini", "ollama"]):
+        model_names = SETTINGS.generator_config[provider]
+
         if provider.lower() == "openai":
             openai_client = _init_openai_wrapper(SETTINGS.OPENAI_API_KEY)
-            return OpenAIWrapperGenerator(client=openai_client)
+            return OpenAIWrapperGenerator(client=openai_client, model_names=model_names)
         elif provider.lower() == "gemini":
             gemini_client = _init_openai_wrapper(
                 api_key=SETTINGS.GEMINI_API_KEY,
                 base_url="https://generativelanguage.googleapis.com/v1beta/openai/",
             )
-            return OpenAIWrapperGenerator(client=gemini_client)
+            return OpenAIWrapperGenerator(client=gemini_client, model_names=model_names)
         elif provider.lower() == "ollama":
             ollama_client = _init_openai_wrapper(
                 api_key="ollama",
                 base_url=os.getenv("OLLAMA_BASE_URL", "http://localhost:11434/v1"),
             )
 
-            return OpenAIWrapperGenerator(client=ollama_client)
+            return OpenAIWrapperGenerator(client=ollama_client, model_names=model_names)
         else:
             raise ValueError("Non-valid provider!")
 

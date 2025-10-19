@@ -2,7 +2,7 @@ import structlog
 from ..state import State
 from ...store.nlp import PromptFactory
 from ...store.nlp.interfaces import BaseGenerator
-from ...core.enums import OpenAIRolesEnum
+from ...core.enums import OpenAIRolesEnum, ModelSizes
 from ...core.schemas import Decision
 from ...core.config import get_settings
 
@@ -24,7 +24,7 @@ async def SemanticAgent(state: State, generator: BaseGenerator) -> State:
     ]
 
     decision: Decision = await generator.structured_chat(
-        Decision, SETTINGS.GENERATOR_SMALL, messages
+        Decision, ModelSizes.SEMANTIC.value, messages
     )
 
     LOGGER.info(f"Routed --> {decision.decision}")

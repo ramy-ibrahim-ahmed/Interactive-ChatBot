@@ -31,8 +31,7 @@ async def chat(
     provider: Literal["gemini", "openai", "ollama"] = Form("gemini"),
 ):
 
-    generators = request.app.state.generators
-    generator = generators.get(provider, generators["gemini"])
+    generator = request.app.state.generators.get(provider)
     embeddings = request.app.state.embeddings
     reranker = request.app.state.reranker
     vectordb = request.app.state.vectordb

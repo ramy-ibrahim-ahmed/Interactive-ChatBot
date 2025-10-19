@@ -7,7 +7,8 @@ const eyes = document.getElementById('eyes');
 const mouth = document.getElementById('mouth');
 const sendButton = document.getElementById('send-button');
 const micButton = document.getElementById('mic-button');
-const providerSelect = document.getElementById('provider');
+const providerButton = document.getElementById('provider-button');
+const providerMenu = document.getElementById('provider-menu');
 
 // Add this at the top of the script, after the DOM elements
 let sessionId = localStorage.getItem('chat_session_id');
@@ -15,6 +16,19 @@ if (!sessionId) {
     sessionId = crypto.randomUUID();
     localStorage.setItem('chat_session_id', sessionId);
 }
+
+// Custom provider selection logic
+let selectedProvider = 'gemini'; // Default
+providerButton.addEventListener('click', () => {
+    providerMenu.classList.toggle('hidden');
+});
+providerMenu.addEventListener('click', (e) => {
+    if (e.target.tagName === 'LI') {
+        selectedProvider = e.target.dataset.value;
+        providerButton.textContent = e.target.textContent;
+        providerMenu.classList.add('hidden');
+    }
+});
 
 // Handle Enter to send and Shift+Enter for new line
 chatInput.addEventListener('keydown', (e) => {
@@ -455,7 +469,7 @@ async function callChatbotAPI(prompt = null, audioBlob = null) {
     try {
         const formData = new FormData();
         formData.append('session_id', sessionId);  // Add session_id here
-        formData.append('provider', providerSelect.value);  // Add selected provider
+        formData.append('provider', selectedProvider);  // Add selected provider
         if (audioBlob) {
             formData.append('audio', audioBlob, 'recording.webm');
         } else if (prompt) {

@@ -1,7 +1,7 @@
 import structlog
 from ..state import State
 from ...store.nlp import PromptFactory
-from ...core.enums import OpenAIRolesEnum
+from ...core.enums import OpenAIRolesEnum, ModelSizes
 from ...core.config import get_settings
 
 SETTINGS = get_settings()
@@ -28,7 +28,7 @@ async def ChatAgent(state: State, generator):
 
     full_response = ""
 
-    async for chunk in generator.stream_chat(messages, SETTINGS.GENERATOR_LARGE):
+    async for chunk in generator.stream_chat(messages, ModelSizes.CHAT.value):
         if chunk:
             yield {"chunk": chunk}
             full_response += chunk

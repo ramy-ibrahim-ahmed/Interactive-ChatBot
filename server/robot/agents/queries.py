@@ -2,7 +2,7 @@ import structlog
 from ..state import State
 from ...store.nlp import PromptFactory
 from ...store.nlp.interfaces import BaseGenerator
-from ...core.enums import OpenAIRolesEnum
+from ...core.enums import OpenAIRolesEnum, ModelSizes
 from ...core.schemas import Queries
 from ...core.config import get_settings
 
@@ -24,7 +24,7 @@ async def QueriesAgent(state: State, generator: BaseGenerator) -> State:
     ]
 
     queries: Queries = await generator.structured_chat(
-        Queries, SETTINGS.GENERATOR_SMALL, messages
+        Queries, ModelSizes.QUERIES.value, messages
     )
 
     LOGGER.info(

@@ -2,6 +2,7 @@ import redis.asyncio as redis
 from typing import List, Dict, Any, Optional
 from ..store.nlp.interfaces.generator import BaseGenerator
 from ..core.config import get_settings
+from ..core.enums import ModelSizes
 
 SETTINGS = get_settings()
 
@@ -26,7 +27,7 @@ class ChatHistoryServie:
         return None
 
     async def update_summary(self, session_id: str, messages: List[Dict[str, Any]]):
-        new_summary = await self.generator.chat(messages, SETTINGS.GENERATOR_LARGE)
+        new_summary = await self.generator.chat(messages, ModelSizes.HISTORY.value)
         cache_key = self._get_cache_key(session_id)
         await self.cachedb.set(cache_key, new_summary)
 
