@@ -8,5 +8,5 @@ class ModelSizes(Enum):
     CHAT = LARGE
     CLASSIFY = SMALL
     HISTORY = LARGE
-    QUERIES = SMALL
+    QUERIES = LARGE
     SEMANTIC = LARGE
