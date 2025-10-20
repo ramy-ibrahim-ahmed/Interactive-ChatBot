@@ -344,7 +344,7 @@ function addMessageToChat(sender, message, returnElement = false) {
     messageWrapper.classList.add('flex', sender === 'user' ? 'justify-end' : 'justify-start');
 
     const messageElement = document.createElement('div');
-    messageElement.classList.add('px-4', 'py-3', 'break-words', 'rounded-lg', 'shadow-md', 'max-w-xs', 'lg:max-w-md');
+    messageElement.classList.add('px-4', 'py-3', 'break-words', 'rounded-lg', 'shadow-md');
 
     if (sender === 'bot') {
         messageElement.dataset.originalText = message;
@@ -360,9 +360,12 @@ function addMessageToChat(sender, message, returnElement = false) {
         messageElement.dir = 'rtl';
         messageElement.classList.add('text-right');
 
+        // New: Make bot messages full width for better markdown support
+        messageElement.classList.add('w-full');
     } else { // This block is for the 'user'
         messageElement.textContent = message;
         messageElement.classList.add('chat-bubble-user');
+        messageElement.classList.add('max-w-xs', 'lg:max-w-md'); // Keep limited width for user bubbles
 
         // We keep the smart detection for the user's messages
         if (isRTL(messageElement.textContent.trim())) {
@@ -373,7 +376,6 @@ function addMessageToChat(sender, message, returnElement = false) {
             messageElement.classList.add('text-left');
         }
     }
-
 
     messageWrapper.appendChild(messageElement);
     chatContainer.appendChild(messageWrapper);

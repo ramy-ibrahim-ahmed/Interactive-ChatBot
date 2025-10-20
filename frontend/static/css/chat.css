@@ -112,3 +112,24 @@ input[type="range"]::-webkit-slider-runnable-track {
 select#provider {
     filter: url(#sketchy);
 }
+
+/* Additional styles for bot messages to support full-width markdown */
+.bg-slate-200 pre,
+.bg-slate-200 table {
+    max-width: 100%;
+    overflow-x: auto;
+    white-space: pre-wrap;
+}
+
+.bg-slate-200 table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.bg-slate-200 th,
+.bg-slate-200 td {
+    border: 1px solid #cbd5e1;
+    padding: 8px;
+    text-align: right;
+    /* RTL support */
+}
