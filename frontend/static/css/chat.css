@@ -23,7 +23,7 @@ body {
 
 /* Chat Bubbles */
 .chat-bubble-user {
-    background-color: #3b82f6;
+    background-color: #34d399;
     color: white;
 }
 
@@ -34,7 +34,7 @@ body {
     background-image:
         linear-gradient(to right, #e2e8f0 1px, transparent 1px),
         linear-gradient(to bottom, #e2e8f0 1px, transparent 1px);
-    background-size: 6rem 3rem;
+    background-size: 8rem 3rem;
     /* Increased to 64px grid for wider appearance */
 }
 
@@ -93,10 +93,10 @@ body {
 /* Custom Range Slider Styles */
 input[type="range"]::-webkit-slider-thumb {
     appearance: none;
-    width: 12px;
-    height: 12px;
-    background: #3b82f6;
-    /* blue-500 */
+    width: 10px;
+    height: 10px;
+    background: #34d399;
+    /* emerald-400 */
     border-radius: 50%;
     cursor: pointer;
 }
@@ -104,7 +104,7 @@ input[type="range"]::-webkit-slider-thumb {
 input[type="range"]::-webkit-slider-runnable-track {
     background: #e2e8f0;
     /* slate-200 */
-    height: 4px;
+    height: 3px;
     border-radius: 4px;
 }
 
@@ -114,22 +114,156 @@ select#provider {
 }
 
 /* Additional styles for bot messages to support full-width markdown */
-.bg-slate-200 pre,
-.bg-slate-200 table {
-    max-width: 100%;
+.bot-message {
+    line-height: 1.6;
+}
+
+.bot-message p {
+    margin-bottom: 1em;
+    text-align: right;
+    /* RTL support */
+}
+
+.bot-message h1,
+.bot-message h2,
+.bot-message h3,
+.bot-message h4,
+.bot-message h5,
+.bot-message h6 {
+    font-weight: bold;
+    margin-top: 1em;
+    margin-bottom: 0.5em;
+    text-align: right;
+    /* RTL support */
+}
+
+.bot-message h1 {
+    font-size: 1.5em;
+}
+
+.bot-message h2 {
+    font-size: 1.4em;
+}
+
+.bot-message h3 {
+    font-size: 1.3em;
+}
+
+.bot-message h4 {
+    font-size: 1.2em;
+}
+
+.bot-message h5 {
+    font-size: 1.1em;
+}
+
+.bot-message h6 {
+    font-size: 1em;
+}
+
+.bot-message ul,
+.bot-message ol {
+    margin-bottom: 1em;
+    padding-right: 2em;
+    /* RTL: padding on right for bullets/numbers */
+    text-align: right;
+    /* RTL support */
+}
+
+.bot-message li {
+    margin-bottom: 0.5em;
+}
+
+.bot-message ul {
+    list-style-type: disc;
+}
+
+.bot-message ol {
+    list-style-type: decimal;
+}
+
+.bot-message blockquote {
+    margin: 1em 0;
+    padding: 0.5em 1em;
+    border-right: 4px solid #cbd5e1;
+    /* RTL: border on right */
+    color: #64748b;
+    font-style: italic;
+    text-align: right;
+    /* RTL support */
+}
+
+.bot-message code {
+    background-color: #f1f5f9;
+    padding: 0.2em 0.4em;
+    border-radius: 4px;
+    font-family: monospace;
+}
+
+.bot-message pre {
+    background-color: #f1f5f9;
+    padding: 1em;
+    border-radius: 4px;
     overflow-x: auto;
     white-space: pre-wrap;
+    font-family: monospace;
+    margin-bottom: 1em;
 }
 
-.bg-slate-200 table {
+.bot-message pre code {
+    background: none;
+    padding: 0;
+}
+
+.bot-message a {
+    color: #3b82f6;
+    text-decoration: underline;
+}
+
+.bot-message a:hover {
+    color: #1d4ed8;
+}
+
+.bot-message hr {
+    border: none;
+    border-top: 1px solid #cbd5e1;
+    margin: 1em 0;
+}
+
+.bot-message img {
+    max-width: 100%;
+    height: auto;
+    border-radius: 4px;
+    margin: 1em 0;
+}
+
+.bot-message table {
     width: 100%;
     border-collapse: collapse;
+    margin-bottom: 1em;
 }
 
-.bg-slate-200 th,
-.bg-slate-200 td {
+.bot-message th,
+.bot-message td {
     border: 1px solid #cbd5e1;
     padding: 8px;
     text-align: right;
     /* RTL support */
+}
+
+.bot-message th {
+    background-color: #f1f5f9;
+    font-weight: bold;
+}
+
+.bot-message strong {
+    font-weight: bold;
+}
+
+.bot-message em {
+    font-style: italic;
+}
+
+.bot-message del {
+    text-decoration: line-through;
 }

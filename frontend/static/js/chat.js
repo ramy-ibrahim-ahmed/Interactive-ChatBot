@@ -130,30 +130,30 @@ function setPersonaState(state) {
 
 function addAudioPlayer(messageElement, audioUrl) {
     const audioContainer = document.createElement('div');
-    audioContainer.classList.add('mt-2', 'flex', 'flex-wrap', 'items-center', 'gap-2', 'justify-end', 'dir-rtl'); // RTL for Arabic labels
+    audioContainer.classList.add('mt-2', 'flex', 'items-center', 'gap-2', 'justify-end', 'bg-slate-100', 'p-2', 'rounded-lg', 'shadow-sm', 'w-1/2');
+    audioContainer.dir = 'rtl';
 
     const audio = document.createElement('audio');
     audio.src = audioUrl;
-    audio.preload = 'metadata'; // Load metadata for duration
+    audio.preload = 'metadata';
 
-    // Play/Pause Button
+    // Play/Pause Button (icon only)
     const playPauseButton = document.createElement('button');
-    playPauseButton.classList.add('flex', 'items-center', 'gap-1', 'text-blue-500', 'bg-transparent', 'border-2', 'border-blue-500', 'hover:bg-blue-100', 'hover:border-blue-600', 'hover:text-blue-600', 'px-3', 'py-1', 'rounded-lg', 'transition-colors', 'font-medium', 'text-sm');
+    playPauseButton.classList.add('text-emerald-400', 'bg-transparent', 'hover:text-emerald-600', 'transition-colors', 'p-1');
     playPauseButton.style.filter = 'url(#sketchy)';
+    playPauseButton.title = 'تشغيل/إيقاف';
 
     const playIcon = `
-    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <polygon points="5 3 19 12 5 21 5 3"></polygon>
-    </svg>
-    تشغيل
-`;
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polygon points="5 3 19 12 5 21 5 3"></polygon>
+        </svg>
+    `;
     const pauseIcon = `
-    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <rect x="6" y="4" width="4" height="16"></rect>
-        <rect x="14" y="4" width="4" height="16"></rect>
-    </svg>
-    إيقاف
-`;
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="6" y="4" width="4" height="16"></rect>
+            <rect x="14" y="4" width="4" height="16"></rect>
+        </svg>
+    `;
     playPauseButton.innerHTML = playIcon;
 
     playPauseButton.onclick = () => {
@@ -165,19 +165,18 @@ function addAudioPlayer(messageElement, audioUrl) {
     };
 
     // Progress Bar
-    const progressContainer = document.createElement('div');
-    progressContainer.classList.add('flex', 'items-center', 'gap-2', 'w-48', 'md:w-64');
-
     const progress = document.createElement('input');
     progress.type = 'range';
     progress.min = 0;
     progress.max = 100;
     progress.value = 0;
-    progress.classList.add('flex-1', 'h-2', 'bg-slate-200', 'rounded-lg', 'cursor-pointer', 'accent-blue-500');
+    progress.classList.add('flex-1', 'h-1', 'bg-slate-300', 'rounded-full', 'cursor-pointer', 'accent-emerald-400');
     progress.style.filter = 'url(#sketchy)';
+    progress.title = 'تقدم التشغيل';
 
+    // Time Display
     const timeDisplay = document.createElement('span');
-    timeDisplay.classList.add('text-xs', 'text-slate-600', 'font-medium');
+    timeDisplay.classList.add('text-xs', 'text-slate-600', 'font-medium', 'min-w-[60px]');
     timeDisplay.textContent = '0:00 / 0:00';
 
     // Update progress and time
@@ -194,27 +193,26 @@ function addAudioPlayer(messageElement, audioUrl) {
         audio.currentTime = time;
     };
 
-    progressContainer.appendChild(progress);
-    progressContainer.appendChild(timeDisplay);
-
-    // Volume Slider
+    // Volume Slider (icon + slider)
     const volumeContainer = document.createElement('div');
     volumeContainer.classList.add('flex', 'items-center', 'gap-1');
 
     const volumeIcon = document.createElement('svg');
+    volumeIcon.classList.add('text-emerald-400', 'w-4', 'h-4');
     volumeIcon.innerHTML = `
-    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="blue-500" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
-        <path d="M15.54 8.46a5 5 0 0 1 0 7.07"></path>
-    </svg>
-`;
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+            <path d="M15.54 8.46a5 5 0 0 1 0 7.07"></path>
+        </svg>
+    `;
+    volumeIcon.title = 'حجم الصوت';
 
     const volume = document.createElement('input');
     volume.type = 'range';
     volume.min = 0;
     volume.max = 100;
     volume.value = 100;
-    volume.classList.add('w-20', 'h-2', 'bg-slate-200', 'rounded-lg', 'cursor-pointer', 'accent-blue-500');
+    volume.classList.add('w-16', 'h-1', 'bg-slate-300', 'rounded-full', 'cursor-pointer', 'accent-emerald-400');
     volume.style.filter = 'url(#sketchy)';
 
     volume.oninput = () => {
@@ -224,17 +222,11 @@ function addAudioPlayer(messageElement, audioUrl) {
     volumeContainer.appendChild(volumeIcon);
     volumeContainer.appendChild(volume);
 
-    // Playback Speed Dropdown
-    const speedContainer = document.createElement('div');
-    speedContainer.classList.add('flex', 'items-center', 'gap-1');
-
-    const speedLabel = document.createElement('span');
-    speedLabel.textContent = 'سرعة:';
-    speedLabel.classList.add('text-xs', 'text-blue-500', 'font-medium');
-
+    // Playback Speed (select only)
     const speedSelect = document.createElement('select');
-    speedSelect.classList.add('bg-transparent', 'border-2', 'border-blue-500', 'text-blue-500', 'px-2', 'py-1', 'rounded-lg', 'text-sm', 'font-medium', 'hover:bg-blue-100', 'hover:border-blue-600', 'hover:text-blue-600', 'transition-colors');
+    speedSelect.classList.add('bg-transparent', 'text-emerald-400', 'text-xs', 'border-none', 'focus:outline-none', 'hover:text-emerald-600', 'transition-colors');
     speedSelect.style.filter = 'url(#sketchy)';
+    speedSelect.title = 'سرعة التشغيل';
 
     const speeds = [0.5, 0.75, 1, 1.25, 1.5, 1.75, 2];
     speeds.forEach(rate => {
@@ -249,10 +241,7 @@ function addAudioPlayer(messageElement, audioUrl) {
         audio.playbackRate = parseFloat(speedSelect.value);
     };
 
-    speedContainer.appendChild(speedLabel);
-    speedContainer.appendChild(speedSelect);
-
-    // Audio event handlers (unchanged from your code)
+    // Audio events
     audio.onplay = () => {
         setPersonaState('talking');
         playPauseButton.innerHTML = pauseIcon;
@@ -274,33 +263,34 @@ function addAudioPlayer(messageElement, audioUrl) {
         timeDisplay.textContent = `0:00 / ${formatTime(audio.duration)}`;
     };
 
-    // Helper to format time (e.g., 0:00)
     function formatTime(seconds) {
         const mins = Math.floor(seconds / 60);
         const secs = Math.floor(seconds % 60);
         return `${mins}:${secs < 10 ? '0' : ''}${secs}`;
     }
 
-    // Append all to container
+    // Append elements
     audioContainer.appendChild(playPauseButton);
-    audioContainer.appendChild(progressContainer);
+    audioContainer.appendChild(progress);
+    audioContainer.appendChild(timeDisplay);
     audioContainer.appendChild(volumeContainer);
-    audioContainer.appendChild(speedContainer);
+    audioContainer.appendChild(speedSelect);
 
     messageElement.appendChild(audioContainer);
 }
 
 function addGenerateTTSButton(messageElement) {
     const generateButton = document.createElement('button');
-    generateButton.classList.add('mt-2', 'flex', 'items-center', 'gap-1', 'text-blue-500', 'bg-transparent', 'border-2', 'border-blue-500', 'hover:bg-blue-100', 'hover:border-blue-600', 'hover:text-blue-600', 'px-3', 'py-1', 'rounded-lg', 'transition-colors', 'font-medium', 'text-sm');
+    generateButton.classList.add('mt-2', 'flex', 'items-center', 'gap-1', 'text-emerald-400', 'bg-transparent', 'border-2', 'border-emerald-400', 'hover:bg-emerald-100', 'hover:border-emerald-600', 'hover:text-emerald-600', 'px-2', 'py-0.5', 'rounded-lg', 'transition-colors', 'font-medium', 'text-xs');
     generateButton.style.filter = 'url(#sketchy)';
     generateButton.innerHTML = `
-    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
         <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
         <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path>
     </svg>
     استمع إلى الرد
 `;
+    generateButton.title = 'توليد الصوت';
     generateButton.onclick = async () => {
         const text = messageElement.dataset.originalText;
         if (!text) return;
@@ -319,7 +309,7 @@ function addGenerateTTSButton(messageElement) {
             alert('فشل في توليد الصوت.');
             generateButton.disabled = false;
             generateButton.innerHTML = `
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
                 <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path>
             </svg>
@@ -344,7 +334,7 @@ function addMessageToChat(sender, message, returnElement = false) {
     messageWrapper.classList.add('flex', sender === 'user' ? 'justify-end' : 'justify-start');
 
     const messageElement = document.createElement('div');
-    messageElement.classList.add('px-4', 'py-3', 'break-words', 'rounded-lg', 'shadow-md');
+    messageElement.classList.add('px-4', 'py-3', 'break-words', 'rounded-lg');
 
     if (sender === 'bot') {
         messageElement.dataset.originalText = message;
@@ -353,7 +343,7 @@ function addMessageToChat(sender, message, returnElement = false) {
         } else {
             messageElement.innerHTML = marked.parse(message);
         }
-        messageElement.classList.add('bg-slate-200', 'text-slate-800');
+        messageElement.classList.add('bot-message', 'text-slate-800');
 
         // --- 1. ADD THESE TWO LINES ---
         // This forces the bot's text to always be Right-to-Left.
@@ -365,7 +355,9 @@ function addMessageToChat(sender, message, returnElement = false) {
     } else { // This block is for the 'user'
         messageElement.textContent = message;
         messageElement.classList.add('chat-bubble-user');
+        messageElement.classList.add('shadow-md');
         messageElement.classList.add('max-w-xs', 'lg:max-w-md'); // Keep limited width for user bubbles
+        messageElement.style.filter = 'url(#sketchy)'; // Enhanced: Apply sketchy filter to user messages
 
         // We keep the smart detection for the user's messages
         if (isRTL(messageElement.textContent.trim())) {

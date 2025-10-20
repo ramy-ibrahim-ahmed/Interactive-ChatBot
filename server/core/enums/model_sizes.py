@@ -4,8 +4,8 @@ from enum import Enum
 class ModelSizes(Enum):
     SMALL = "small"
     LARGE = "large"
-    CHAT = LARGE
+    CHAT = SMALL
     CLASSIFY = SMALL
     HISTORY = SMALL
     QUERIES = SMALL
-    SEMANTIC = LARGE
+    SEMANTIC = SMALL
