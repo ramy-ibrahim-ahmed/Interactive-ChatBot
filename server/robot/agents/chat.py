@@ -5,7 +5,7 @@ from ...core.enums import OpenAIRolesEnum, ModelSizes
 from ...core.config import get_settings
 
 SETTINGS = get_settings()
-LOGGER = structlog.getLogger(__name__)
+LOGGER = structlog.get_logger(__name__)
 
 
 async def ChatAgent(state: State, generator):

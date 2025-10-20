@@ -6,7 +6,7 @@ from ...core.enums import OpenAIRolesEnum, ModelSizes
 from ...core.schemas import Decision
 from ...core.config import get_settings
 
-LOGGER = structlog.getLogger(__name__)
+LOGGER = structlog.get_logger(__name__)
 SETTINGS = get_settings()
 
 

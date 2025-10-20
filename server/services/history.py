@@ -1,9 +1,9 @@
+import structlog
 import redis.asyncio as redis
 from typing import List, Dict, Any, Optional
 from ..store.nlp.interfaces.generator import BaseGenerator
 from ..core.config import get_settings
 from ..core.enums import ModelSizes
-import structlog
 
 SETTINGS = get_settings()
 LOGGER = structlog.get_logger(__name__)
