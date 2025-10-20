@@ -1,12 +1,11 @@
 from enum import Enum
 
-SMALL = "small"
-LARGE = "large"
-
 
 class ModelSizes(Enum):
+    SMALL = "small"
+    LARGE = "large"
     CHAT = LARGE
     CLASSIFY = SMALL
-    HISTORY = LARGE
-    QUERIES = LARGE
+    HISTORY = SMALL
+    QUERIES = SMALL
     SEMANTIC = LARGE
