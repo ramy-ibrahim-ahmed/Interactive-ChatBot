@@ -83,4 +83,11 @@ app.include_router(api_router_v1, prefix="/api/v1")
 
 if __name__ == "__main__":
     port = int(os.environ.get("APP_PORT", 8000))
-    uvicorn.run(app, host="0.0.0.0", port=port)
+    uvicorn.run(
+        app,
+        host="0.0.0.0",
+        port=port,
+        log_config=None,
+        log_level="critical",
+        access_log=False,
+    )
