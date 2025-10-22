@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Onyx Control Panel</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" />
+    <link rel="stylesheet" href="../static/css/control.css">
+</head>
+
+<body class="bg-slate-100 h-screen w-screen overflow-hidden font-inter">
+
+    <svg style="position: absolute; width: 0; height: 0;" aria-hidden="true">
+        <filter id="sketchy">
+            <feTurbulence type="fractalNoise" baseFrequency="0.05" numOctaves="3" result="noise" />
+            <feDisplacementMap in="SourceGraphic" in2="noise" scale="2" xChannelSelector="R" yChannelSelector="G" />
+        </filter>
+    </svg>
+
+    <div class="bg-white w-full h-full overflow-hidden">
+
+        <div class="w-full flex flex-col h-full overflow-y-auto p-4 gap-4 md:grid md:grid-cols-2 md:gap-4 md:space-y-0"
+            id="panel-container">
+            <!-- Extract PDF to Markdown -->
+            <div class="bg-white p-4 rounded-md shadow-md border border-slate-200">
+                <h3 class="text-base font-semibold mb-2">Extract PDF to Markdown</h3>
+                <form id="extract-form" class="space-y-2">
+                    <input type="file" id="pdf-file" accept=".pdf"
+                        class="w-full p-1 border border-slate-300 rounded-md text-sm" required>
+                    <button type="submit"
+                        class="bg-transparent border-2 border-blue-500 hover:bg-blue-100 hover:border-blue-700 hover:text-blue-700 text-blue-500 font-bold py-1 px-3 rounded-md transition-all text-sm"
+                        style="filter: url(#sketchy);">Extract</button>
+                </form>
+                <p id="extract-status" class="mt-1 text-xs text-slate-600"></p>
+            </div>
+
+            <!-- Chunk Markdown -->
+            <div class="bg-white p-4 rounded-md shadow-md border border-slate-200">
+                <h3 class="text-base font-semibold mb-2">Chunk Markdown</h3>
+                <form id="chunk-form" class="space-y-2">
+                    <input type="file" id="md-file" accept=".md"
+                        class="w-full p-1 border border-slate-300 rounded-md text-sm" required>
+                    <input type="text" id="separator" placeholder="Separator (default: ---#---)"
+                        class="w-full p-1 border border-slate-300 rounded-md text-sm">
+                    <input type="text" id="boundaries" placeholder="Boundaries (comma-separated integers)"
+                        class="w-full p-1 border border-slate-300 rounded-md text-sm" required>
+                    <input type="number" id="num-toc-pages" placeholder="Number of TOC Pages"
+                        class="w-full p-1 border border-slate-300 rounded-md text-sm" required>
+                    <input type="text" id="collection-name-chunk" placeholder="Collection Name"
+                        class="w-full p-1 border border-slate-300 rounded-md text-sm" required>
+                    <button type="submit"
+                        class="bg-transparent border-2 border-blue-500 hover:bg-blue-100 hover:border-blue-700 hover:text-blue-700 text-blue-500 font-bold py-1 px-3 rounded-md transition-all text-sm"
+                        style="filter: url(#sketchy);">Chunk</button>
+                </form>
+                <p id="chunk-status" class="mt-1 text-xs text-slate-600"></p>
+            </div>
+
+            <!-- Index Semantic -->
+            <div class="bg-white p-4 rounded-md shadow-md border border-slate-200">
+                <h3 class="text-base font-semibold mb-2">Index Semantic</h3>
+                <form id="index-semantic-form" class="space-y-2">
+                    <input type="file" id="json-file-semantic" accept=".json"
+                        class="w-full p-1 border border-slate-300 rounded-md text-sm" required>
+                    <input type="text" id="collection-name-semantic" placeholder="Collection Name"
+                        class="w-full p-1 border border-slate-300 rounded-md text-sm" required>
+                    <button type="submit"
+                        class="bg-transparent border-2 border-blue-500 hover:bg-blue-100 hover:border-blue-700 hover:text-blue-700 text-blue-500 font-bold py-1 px-3 rounded-md transition-all text-sm"
+                        style="filter: url(#sketchy);">Index Semantic</button>
+                </form>
+                <p id="index-semantic-status" class="mt-1 text-xs text-slate-600"></p>
+            </div>
+
+            <!-- Index Lexical -->
+            <div class="bg-white p-4 rounded-md shadow-md border border-slate-200">
+                <h3 class="text-base font-semibold mb-2">Index Lexical</h3>
+                <form id="index-lexical-form" class="space-y-2">
+                    <input type="file" id="json-file-lexical" accept=".json"
+                        class="w-full p-1 border border-slate-300 rounded-md text-sm" required>
+                    <input type="text" id="collection-name-lexical" placeholder="Collection Name"
+                        class="w-full p-1 border border-slate-300 rounded-md text-sm" required>
+                    <button type="submit"
+                        class="bg-transparent border-2 border-blue-500 hover:bg-blue-100 hover:border-blue-700 hover:text-blue-700 text-blue-500 font-bold py-1 px-3 rounded-md transition-all text-sm"
+                        style="filter: url(#sketchy);">Index Lexical</button>
+                </form>
+                <p id="index-lexical-status" class="mt-1 text-xs text-slate-600"></p>
+            </div>
+        </div>
+    </div>
+
+    <script src="../static/js/control.js"></script>
+</body>
+
+</html>
