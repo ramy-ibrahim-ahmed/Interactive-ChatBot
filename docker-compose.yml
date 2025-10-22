@@ -3,6 +3,7 @@ services:
     build: ./server
     container_name: onyx-ix-guide-api
     volumes:
+      - ./server/models:/code/server/models
       - temp-audio-data:/server/temp_audio
     restart: unless-stopped
     command: uv run python -m server.main
