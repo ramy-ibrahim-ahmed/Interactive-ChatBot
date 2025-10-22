@@ -30,7 +30,7 @@ async def process_markdown(
     if not md_file.filename.lower().endswith(".md"):
         raise HTTPException(status_code=400, detail="File must be a Markdown file")
 
-    generator: BaseGenerator = request.app.state.generator
+    generator: BaseGenerator = request.app.state.generators.get("gemini")
     embeddings: BaseEmbeddings = request.app.state.embeddings
     vectordb: VectorDBInterface = request.app.state.vectordb
     service = ChunkService(generator, embeddings, vectordb)

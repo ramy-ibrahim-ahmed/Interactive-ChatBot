@@ -1,10 +1,13 @@
 import os
 import json
+import structlog
 from typing import List
 from fastapi import APIRouter, Request, UploadFile, File, HTTPException, Query
 from ...store.nlp.interfaces import BaseEmbeddings
 from ...store.semantic import VectorDBInterface
 from ...store.lexical.index import LexicalTrainer
+
+LOGGER = structlog.get_logger(__name__)
 
 router = APIRouter(
     prefix="/data",
@@ -37,11 +40,17 @@ async def index_semantic(
     collection_name: str = Query(...),
 ):
     flatten_chunks = await _process_json_file_and_get_chunks(json_file)
+
     embeddings_service: BaseEmbeddings = request.app.state.embeddings
     vectordb: VectorDBInterface = request.app.state.vectordb
+
     embedded_vectors = await embeddings_service.embed(flatten_chunks, batch_size=10)
+    LOGGER.info(f"embeded {len(flatten_chunks)} cunks success")
+
     metadata = [{"text": text} for text in flatten_chunks]
     vectordb.upsert(embedded_vectors, metadata, collection_name, batch_size=100)
+    LOGGER.info(f"upserted to {collection_name} success")
+
     return {"message": "Data indexed successfully"}
 
 
@@ -55,9 +64,12 @@ async def index_lexical(
     model_save_path = f"models/{collection_name}.json"
     flatten_chunks = await _process_json_file_and_get_chunks(json_file)
     lexical_trainer: LexicalTrainer = request.app.state.lexical_trainer
+
     lexical_trainer.train_and_index(
         corpus=flatten_chunks,
         namespace=collection_name,
         model_save_path=model_save_path,
     )
+    LOGGER.info(f"upserted to {collection_name} success")
+
     return {"message": "Data indexed successfully"}

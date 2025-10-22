@@ -17,7 +17,7 @@ async def convert_pdf_to_markdown(request: Request, pdf_file: UploadFile = File(
     if not pdf_file.filename.lower().endswith(".pdf"):
         raise HTTPException(status_code=400, detail="File must be a PDF")
 
-    generator: BaseGenerator = request.app.state.generator
+    generator: BaseGenerator = request.app.state.generators.get("gemini")
     service = MarkdownService(generator)
 
     try:

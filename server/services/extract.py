@@ -1,14 +1,15 @@
 import fitz
+import structlog
 import google.generativeai as genai
 from PIL import Image as PILImage
 from io import BytesIO
-from tqdm import tqdm
 from ..store.nlp import PromptFactory
 from ..store.nlp.interfaces import BaseGenerator
-from ..core.enums import OpenAIRolesEnum
+from ..core.enums import OpenAIRolesEnum, ModelSizes
 from ..core.config import get_settings
 
 SETTINGS = get_settings()
+LOGGER = structlog.get_logger(__name__)
 
 
 class MarkdownService:
@@ -38,7 +39,7 @@ class MarkdownService:
                 },
                 {"role": OpenAIRolesEnum.USER.value, "content": page},
             ],
-            model_name=SETTINGS.GENERATOR_SMALL,
+            model_size=ModelSizes.SMALL.value,
         )
         return response.strip()
 
@@ -49,7 +50,8 @@ class MarkdownService:
         mat = fitz.Matrix(zoom, zoom)
         total_pages = len(pdf_document)
 
-        for page_number in tqdm(range(total_pages), total=total_pages):
+        LOGGER.info(f"Extracted {total_pages} pages")
+        for page_number in range(total_pages):
             if page_number % 50 == 0 and page_number > 0:
                 api_idx += 1
             api_idx %= len(self.gemini_api_keys)
@@ -61,8 +63,8 @@ class MarkdownService:
             text_extracted = self.ocr(
                 image_bytes,
                 self.gemini_api_keys[api_idx],
-                PromptFactory().get_prompt("vlm_markdown"),
-                SETTINGS.GENERATOR_LARGE,
+                PromptFactory().get_prompt("ocr"),
+                "gemini-2.5-flash",
             )
 
             final_text = await self.md_convert(text_extracted)
@@ -70,4 +72,5 @@ class MarkdownService:
 
         pdf_document.close()
 
+        LOGGER.info(f"Conversion successfully")
         return "\n\n\n---#---\n\n\n".join(extracted)

@@ -1,12 +1,14 @@
-from tqdm import tqdm
+import time
+import structlog
 from pathlib import Path
 from ..store.nlp import PromptFactory
 from ..store.nlp.interfaces import BaseGenerator
 from ..store.semantic import VectorDBInterface
 from ..core.schemas.structure_llm import Chunks
-from ..core.enums import OpenAIRolesEnum
+from ..core.enums import OpenAIRolesEnum, ModelSizes
 from ..core.config import get_settings
 
+LOGGER = structlog.get_logger(__name__)
 SETTINGS = get_settings()
 
 
@@ -36,20 +38,26 @@ class ChunkService:
         return ["\n\n---\n\n".join(map(str, sublist)) for sublist in out]
 
     async def chunk(self, file_path, separator, boundaries, num_toc_pages):
+
         pages = self.split_md_file(file_path, separator)
         topics = self.split_at_boundaries(pages, boundaries, num_toc_pages)
+        LOGGER.info(f"chunking {len(pages)} pages with {len(topics)} topics")
+
         all_chunks = list()
-        for topic in tqdm(topics, total=len(topics), desc="chunking"):
+        for topic in topics:
             response = await self.nlp.structured_chat(
                 response_model=Chunks,
-                model_name=SETTINGS.GENERATOR_LARGE,
+                model_size=ModelSizes.CHUNK.value,
                 messages=[
                     {
                         "role": OpenAIRolesEnum.SYSTEM.value,
-                        "content": PromptFactory().get_prompt("chunk-hybird"),
+                        "content": PromptFactory().get_prompt("chunk"),
                     },
                     {"role": OpenAIRolesEnum.USER.value, "content": topic},
                 ],
             )
             all_chunks.append(response)
+            time.sleep(61)
+
+        LOGGER.info("Chunking success")
         return all_chunks
