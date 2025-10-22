@@ -35,7 +35,6 @@ async def chat(
     embeddings = request.app.state.embeddings
     reranker = request.app.state.reranker
     vectordb = request.app.state.vectordb
-    lexical_search = request.app.state.lexical_search
     cachedb = request.app.state.cachedb
     stt = request.app.state.stt
 
@@ -47,7 +46,7 @@ async def chat(
     history_service = ChatHistoryServie(cachedb=cachedb, generator=generator)
     previous_summary = await history_service.get_summary(session_id)
 
-    workflow = init_workflow(generator, embeddings, reranker, vectordb, lexical_search)
+    workflow = init_workflow(generator, embeddings, reranker, vectordb)
 
     async def event_generator() -> AsyncGenerator[str, None]:
         user_message = query

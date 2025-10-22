@@ -45,12 +45,6 @@ async def lifespan(app: FastAPI):
     vectordb.connect()
     app.state.vectordb = vectordb
 
-    app.state.lexical_search = LexicalSearch(
-        api_key=SETTINGS.PINECONE_API_KEY,
-        host=SETTINGS.PINECONE_HOST_SPARSE,
-        model_path=SETTINGS.PROB_MODEL_FILE,
-    )
-
     app.state.lexical_trainer = LexicalTrainer(
         api_key=SETTINGS.PINECONE_API_KEY, host=SETTINGS.PINECONE_HOST_SPARSE
     )

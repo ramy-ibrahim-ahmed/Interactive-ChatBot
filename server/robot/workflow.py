@@ -5,7 +5,7 @@ from .agents import ChatAgent, ClassifyAgent, QueriesAgent, SearchAgent, Semanti
 from ..core.enums import NodesEnum
 
 
-def init_workflow(generator, embeddings, reranker, vectordb, lexical_search):
+def init_workflow(generator, embeddings, reranker, vectordb):
 
     nodes = {
         NodesEnum.CHAT.value: partial(ChatAgent, generator=generator),
@@ -13,11 +13,7 @@ def init_workflow(generator, embeddings, reranker, vectordb, lexical_search):
         NodesEnum.QUERIES.value: partial(QueriesAgent, generator=generator),
         NodesEnum.SEMANTIC_ROUTER.value: partial(SemanticAgent, generator=generator),
         NodesEnum.SEARCH.value: partial(
-            SearchAgent,
-            embeddings=embeddings,
-            reranker=reranker,
-            vectordb=vectordb,
-            lexical_search=lexical_search,
+            SearchAgent, embeddings=embeddings, reranker=reranker, vectordb=vectordb
         ),
     }
 

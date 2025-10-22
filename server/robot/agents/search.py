@@ -15,7 +15,6 @@ async def SearchAgent(
     embeddings: BaseEmbeddings,
     reranker: BaseReranker,
     vectordb: VectorDBInterface,
-    lexical_search: LexicalSearch,
 ) -> State:
 
     system_name = state.get("system_name")
@@ -38,12 +37,19 @@ async def SearchAgent(
     )
     LOGGER.info(f"   2. Cosine similarity returns {len(nearest_semantic)} queries")
 
+    lexical_search = LexicalSearch(
+        api_key=SETTINGS.PINECONE_API_KEY,
+        host=SETTINGS.PINECONE_HOST_SPARSE,
+        model_path=f"{system_name}.json",
+    )
+    LOGGER.info(f"   3. Probabilistic model loaded")
+
     nearest_lexical = lexical_search.search(
         lexical_query,
         SETTINGS.LEXICAL_TOP_K,
         system_name,
     )
-    LOGGER.info(f"   3. Probabilistic returns {len(nearest_lexical)} queries")
+    LOGGER.info(f"   4. Probabilistic returns {len(nearest_lexical)} queries")
 
     unique_chunks = {n["text"] for n in nearest_semantic}
     unique_chunks.update(k["text"] for k in nearest_lexical)
