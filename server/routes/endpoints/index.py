@@ -60,8 +60,8 @@ async def index_lexical(
     json_file: UploadFile = File(...),
     collection_name: str = Query(...),
 ):
-    os.makedirs("models", exist_ok=True)
-    model_save_path = f"models/{collection_name}.json"
+    os.makedirs("server/models", exist_ok=True)
+    model_save_path = f"server/models/{collection_name}.json"
     flatten_chunks = await _process_json_file_and_get_chunks(json_file)
     lexical_trainer: LexicalTrainer = request.app.state.lexical_trainer
 

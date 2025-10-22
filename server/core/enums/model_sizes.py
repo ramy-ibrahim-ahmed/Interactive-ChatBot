@@ -11,4 +11,4 @@ class ModelSizes(Enum):
     SEMANTIC = SMALL
     OCR = LARGE
     POST_OCR = SMALL
-    CHUNK = LARGE
+    CHUNK = SMALL

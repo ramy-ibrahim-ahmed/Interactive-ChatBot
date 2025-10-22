@@ -3,6 +3,7 @@ import json
 import logging
 import tempfile
 from fastapi import APIRouter, Request, UploadFile, File, HTTPException, Query
+from fastapi.responses import Response
 from ...store.nlp.interfaces import BaseGenerator, BaseEmbeddings
 from ...store.semantic import VectorDBInterface
 from ...services import ChunkService
@@ -53,13 +54,17 @@ async def process_markdown(
             file_path = tmp.name
 
         data = await service.chunk(file_path, separator, boundaries_list, num_toc_pages)
-        os.makedirs("output", exist_ok=True)
         json_data = [item.model_dump() for item in data]
 
-        with open(f"output/{collection_name}.json", "w", encoding="utf-8") as f:
-            json.dump(json_data, f, indent=4, ensure_ascii=False)
+        json_str = json.dumps(json_data, indent=4, ensure_ascii=False)
 
-        return {"message": "Data chunked successfully"}
+        headers = {
+            "Content-Disposition": f"attachment; filename={collection_name}.json"
+        }
+
+        return Response(
+            content=json_str, media_type="application/json", headers=headers
+        )
     finally:
         if os.path.exists(file_path):
             os.remove(file_path)

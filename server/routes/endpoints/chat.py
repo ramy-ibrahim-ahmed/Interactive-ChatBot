@@ -2,12 +2,10 @@ import os
 import json
 import shutil
 import tempfile
-
 from typing import AsyncGenerator, Literal
 from fastapi import APIRouter, Request, HTTPException, Form, BackgroundTasks
 from fastapi import File, UploadFile
 from fastapi.responses import StreamingResponse
-
 from ...robot import init_workflow
 from ...services import ChatHistoryServie
 from ..background import update_chat_history_task
