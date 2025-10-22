@@ -1,11 +1,12 @@
 import fitz
+import time
 import structlog
 import google.generativeai as genai
 from PIL import Image as PILImage
 from io import BytesIO
+from tenacity import retry, stop_after_attempt, wait_fixed  # Import tenacity
 from ..store.nlp import PromptFactory
 from ..store.nlp.interfaces import BaseGenerator
-from ..core.enums import OpenAIRolesEnum, ModelSizes
 from ..core.config import get_settings
 
 SETTINGS = get_settings()
@@ -17,6 +18,7 @@ class MarkdownService:
         self.generator: BaseGenerator = generator
         self.gemini_api_keys = SETTINGS.GEMINI_API_KEYS
 
+    @retry(stop=stop_after_attempt(3), wait=wait_fixed(2))
     def ocr(self, image_bytes: bytes, gemini_api_key: str, prompt: str, model: str):
         pil_img = PILImage.open(BytesIO(image_bytes))
         genai.configure(api_key=gemini_api_key, transport="rest")
@@ -24,24 +26,12 @@ class MarkdownService:
             model,
             generation_config={"response_mime_type": "application/json"},
         )
-        response = gemini.generate_content([prompt, pil_img])
-        return response.text
-
-    async def md_convert(self, page):
-        markdown_rewrite_prompt = (
-            "Produce markdown directly from the following text without additional tags."
-        )
-        response = await self.generator.chat(
-            messages=[
-                {
-                    "role": OpenAIRolesEnum.SYSTEM.value,
-                    "content": markdown_rewrite_prompt,
-                },
-                {"role": OpenAIRolesEnum.USER.value, "content": page},
-            ],
-            model_size=ModelSizes.SMALL.value,
-        )
-        return response.strip()
+        try:
+            response = gemini.generate_content([prompt, pil_img])
+            return response.text
+        except Exception as e:
+            LOGGER.exception(f"Operation failed, will retry... Error: {e}")
+            raise e
 
     async def process_pdf(self, pdf_bytes: bytes, zoom=2.0):
         extracted = list()
@@ -54,6 +44,7 @@ class MarkdownService:
         for page_number in range(total_pages):
             if page_number % 50 == 0 and page_number > 0:
                 api_idx += 1
+                LOGGER.info("Gemini API key changed...")
             api_idx %= len(self.gemini_api_keys)
 
             page = pdf_document.load_page(page_number)
@@ -66,11 +57,10 @@ class MarkdownService:
                 PromptFactory().get_prompt("ocr"),
                 "gemini-2.5-flash",
             )
+            time.sleep(1)
 
-            final_text = await self.md_convert(text_extracted)
-            extracted.append(final_text)
+            extracted.append(text_extracted)
 
         pdf_document.close()
-
-        LOGGER.info(f"Conversion successfully")
+        LOGGER.info(f"Conversion successful")
         return "\n\n\n---#---\n\n\n".join(extracted)
