@@ -1,4 +1,7 @@
 import os
+import glob
+import shutil
+import tempfile
 import structlog
 import uvicorn
 import redis.asyncio as redis
@@ -55,7 +58,18 @@ async def lifespan(app: FastAPI):
     vectordb.disconnect()
     await app.state.cachedb.flushdb()
     await app.state.cachedb.close()
-    LOGGER.info("APP shut down success")
+    temp_base = tempfile.gettempdir()
+    pattern = os.path.join(temp_base, "onyx_task_*")
+    cleaned_count = 0
+    for temp_dir in glob.glob(pattern):
+        try:
+            shutil.rmtree(temp_dir)
+            cleaned_count += 1
+            LOGGER.info(f"Shutdown: cleaned {temp_dir}")
+        except Exception as e:
+            LOGGER.error(f"Shutdown: failed {temp_dir}: {e}")
+
+    LOGGER.info(f"APP shutdown success. Cleaned {cleaned_count} temp dirs.")
 
 
 app = FastAPI(
