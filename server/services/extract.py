@@ -6,7 +6,6 @@ from PIL import Image as PILImage
 from io import BytesIO
 from tenacity import retry, stop_after_attempt, wait_fixed
 from ..store.nlp import PromptFactory
-from ..store.nlp.interfaces import BaseGenerator
 from ..core.config import get_settings
 
 SETTINGS = get_settings()
@@ -14,8 +13,7 @@ LOGGER = structlog.get_logger(__name__)
 
 
 class MarkdownService:
-    def __init__(self, generator):
-        self.generator: BaseGenerator = generator
+    def __init__(self):
         self.gemini_api_keys = SETTINGS.GEMINI_API_KEYS
 
     @retry(stop=stop_after_attempt(3), wait=wait_fixed(2))

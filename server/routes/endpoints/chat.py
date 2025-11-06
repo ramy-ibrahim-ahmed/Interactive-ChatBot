@@ -2,6 +2,7 @@ import os
 import json
 import shutil
 import tempfile
+from datetime import datetime
 from typing import AsyncGenerator, Literal
 from fastapi import APIRouter, Request, HTTPException, Form, BackgroundTasks
 from fastapi import File, UploadFile
@@ -11,6 +12,7 @@ from ...services import ChatHistoryServie
 from ..background import update_chat_history_task
 from ..utils import stream_workflow_events, _format_sse_message
 
+LOG_FILE = "/logs/chat_turns_log.json"
 
 router = APIRouter(
     prefix="/chat",
@@ -89,6 +91,17 @@ async def chat(
                     if final_search_results
                     else ""
                 )
+
+                log_entry = {
+                    "timestamp": datetime.utcnow().isoformat(),
+                    "session_id": session_id,
+                    "user_message": user_message,
+                    "search_str": search_str,
+                    "final_ai_response": final_ai_response,
+                }
+                os.makedirs(os.path.dirname(LOG_FILE), exist_ok=True)
+                with open(LOG_FILE, "a", encoding="utf-8") as f:
+                    f.write(json.dumps(log_entry, ensure_ascii=False) + "\n")
 
                 background_tasks.add_task(
                     update_chat_history_task,
