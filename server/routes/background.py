@@ -3,6 +3,9 @@ import time
 from ..services import ChatHistoryServie
 from ..core.enums import OpenAIRolesEnum
 from ..store.nlp import PromptFactory
+import structlog
+
+LOGGER = structlog.get_logger(__name__)
 
 
 async def update_chat_history_task(
@@ -32,13 +35,13 @@ async def update_chat_history_task(
         await history_service.update_summary(session_id, messages)
 
     except Exception as e:
-        print(f"Error in background history update for session {session_id}: {e}")
+        LOGGER.info(f"Error in background history update for session {session_id}: {e}")
 
 
 def cleanup_file_task(path: str):
     try:
-        time.sleep(60)
+        time.sleep(60 * 10)
         os.remove(path)
-        print(f"Cleaned up temp file: {path}")
+        LOGGER.info(f"Cleaned up temp file: {path}")
     except OSError as e:
-        print(f"Error cleaning up file {path}: {e}")
+        LOGGER.error(f"Error cleaning up file {path}: {e}")

@@ -1,10 +1,10 @@
 import fitz
-import time
+import asyncio
 import structlog
 import google.generativeai as genai
 from PIL import Image as PILImage
 from io import BytesIO
-from tenacity import retry, stop_after_attempt, wait_fixed  # Import tenacity
+from tenacity import retry, stop_after_attempt, wait_fixed
 from ..store.nlp import PromptFactory
 from ..store.nlp.interfaces import BaseGenerator
 from ..core.config import get_settings
@@ -33,34 +33,37 @@ class MarkdownService:
             LOGGER.exception(f"Operation failed, will retry... Error: {e}")
             raise e
 
-    async def process_pdf(self, pdf_bytes: bytes, zoom=2.0):
-        extracted = list()
+    async def process_pdf(self, pdf_bytes: bytes, output_path: str, zoom=2.0):
         api_idx = 0
         pdf_document = fitz.open(stream=pdf_bytes, filetype="pdf")
         mat = fitz.Matrix(zoom, zoom)
         total_pages = len(pdf_document)
 
         LOGGER.info(f"Extracted {total_pages} pages")
-        for page_number in range(total_pages):
-            if page_number % 50 == 0 and page_number > 0:
-                api_idx += 1
-                LOGGER.info("Gemini API key changed...")
-            api_idx %= len(self.gemini_api_keys)
 
-            page = pdf_document.load_page(page_number)
-            pix = page.get_pixmap(matrix=mat)
-            image_bytes = pix.tobytes("png")
+        with open(output_path, "w", encoding="utf-8") as f:
+            for page_number in range(total_pages):
+                if page_number % 50 == 0 and page_number > 0:
+                    api_idx += 1
+                    LOGGER.info("Gemini API key changed...")
+                api_idx %= len(self.gemini_api_keys)
 
-            text_extracted = self.ocr(
-                image_bytes,
-                self.gemini_api_keys[api_idx],
-                PromptFactory().get_prompt("ocr"),
-                "gemini-2.5-flash",
-            )
-            time.sleep(1)
+                page = pdf_document.load_page(page_number)
+                pix = page.get_pixmap(matrix=mat)
+                image_bytes = pix.tobytes("png")
 
-            extracted.append(text_extracted)
+                text_extracted = self.ocr(
+                    image_bytes,
+                    self.gemini_api_keys[api_idx],
+                    PromptFactory().get_prompt("ocr"),
+                    "gemini-2.5-flash",
+                )
+
+                f.write(text_extracted)
+                f.write("\n\n\n---#---\n\n\n")
+                f.flush()
+
+                await asyncio.sleep(1)
 
         pdf_document.close()
-        LOGGER.info(f"Conversion successful")
-        return "\n\n\n---#---\n\n\n".join(extracted)
+        LOGGER.info(f"Conversion successful. Output: {output_path}")
