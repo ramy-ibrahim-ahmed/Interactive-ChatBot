@@ -5,7 +5,7 @@ services:
     volumes:
       - ./server/models:/code/server/models
       - ./logs:/logs
-      - ./temp/audio:/server/temp_audio
+      - temp-audio-data:/server/temp_audio
     restart: unless-stopped
     command: uv run python -m server.main
     env_file:
