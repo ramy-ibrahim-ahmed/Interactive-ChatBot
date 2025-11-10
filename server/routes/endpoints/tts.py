@@ -15,7 +15,7 @@ async def generate_tts(
     tts = request.app.state.tts
     try:
         url_path, full_file_path = await tts.text_to_speech(text)
-        background_tasks.add_task(cleanup_file_task, full_file_path)
+        # background_tasks.add_task(cleanup_file_task, full_file_path)
         return {"audio_path": url_path}
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"TTS generation failed: {str(e)}")
