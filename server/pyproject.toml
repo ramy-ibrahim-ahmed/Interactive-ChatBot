@@ -23,5 +23,6 @@ dependencies = [
     "tqdm>=4.67.1",
     "qdrant-client>=1.15.1",
     "python-json-logger>=4.0.0",
-    "structlog[dev]>=25.4.0",
+    "structlog>=25.4.0",
+    "nltk>=3.9.2",
 ]

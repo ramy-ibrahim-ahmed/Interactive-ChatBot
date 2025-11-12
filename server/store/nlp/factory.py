@@ -1,3 +1,4 @@
+import os
 from typing import Literal, Optional
 from openai import AsyncOpenAI
 from cohere import AsyncClientV2
@@ -13,12 +14,12 @@ SETTINGS = get_settings()
 
 def _init_openai_wrapper(api_key: str, base_url: Optional[str] = None):
     if base_url:
-        return AsyncOpenAI(api_key=api_key, base_url=base_url)
+        return AsyncOpenAI(api_key=api_key, base_url=base_url, timeout=300)
     return AsyncOpenAI(api_key=api_key)
 
 
 def _init_cohere_client(api_key: str):
-    return AsyncClientV2(api_key=api_key)
+    return AsyncClientV2(api_key=api_key, timeout=300)
 
 
 class NLPFactory:
@@ -36,20 +37,24 @@ class NLPFactory:
 
     @staticmethod
     def create_generator(provider: Literal["openai", "gemini", "ollama"]):
+        model_names = SETTINGS.generator_config[provider]
+
         if provider.lower() == "openai":
             openai_client = _init_openai_wrapper(SETTINGS.OPENAI_API_KEY)
-            return OpenAIWrapperGenerator(client=openai_client)
+            return OpenAIWrapperGenerator(client=openai_client, model_names=model_names)
         elif provider.lower() == "gemini":
             gemini_client = _init_openai_wrapper(
                 api_key=SETTINGS.GEMINI_API_KEY,
                 base_url="https://generativelanguage.googleapis.com/v1beta/openai/",
             )
-            return OpenAIWrapperGenerator(client=gemini_client)
+            return OpenAIWrapperGenerator(client=gemini_client, model_names=model_names)
         elif provider.lower() == "ollama":
             ollama_client = _init_openai_wrapper(
-                api_key="ollama", base_url="http://localhost:11434/v1"
+                api_key="ollama",
+                base_url=os.getenv("OLLAMA_BASE_URL", "http://localhost:11434/v1"),
             )
-            return OpenAIWrapperGenerator(client=ollama_client)
+
+            return OpenAIWrapperGenerator(client=ollama_client, model_names=model_names)
         else:
             raise ValueError("Non-valid provider!")
 

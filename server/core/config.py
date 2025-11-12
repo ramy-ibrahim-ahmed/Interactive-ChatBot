@@ -23,17 +23,37 @@ class Settings(BaseSettings):
     RERANKER_MODEL: str
     RERANKER_TOP_K: int
 
-    GENERATOR_LARGE: str
-    GENERATOR_SMALL: str
-
     REDIS_PORT: int
     REDIS_PASSWORD: int
 
-    PROVIDER_GENERATOR: str
     PROVIDER_EMBEDDINGS: str
     PROVIDER_RERANKER: str
     PROVIDER_STT: str
     PROVIDER_TTS: str
+
+    GENERATOR_GEMINI_LARGE: str
+    GENERATOR_GEMINI_SMALL: str
+    GENERATOR_OPENAI_LARGE: str
+    GENERATOR_OPENAI_SMALL: str
+    GENERATOR_OLLAMA_LARGE: str
+    GENERATOR_OLLAMA_SMALL: str
+
+    @property
+    def generator_config(self):
+        return {
+            "gemini": {
+                "large": self.GENERATOR_GEMINI_LARGE,
+                "small": self.GENERATOR_GEMINI_SMALL,
+            },
+            "openai": {
+                "large": self.GENERATOR_OPENAI_LARGE,
+                "small": self.GENERATOR_OPENAI_SMALL,
+            },
+            "ollama": {
+                "large": self.GENERATOR_OLLAMA_LARGE,
+                "small": self.GENERATOR_OLLAMA_SMALL,
+            },
+        }
 
     class Config:
         env_file = "./server/.env"

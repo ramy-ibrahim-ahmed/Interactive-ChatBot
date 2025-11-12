@@ -6,6 +6,12 @@ RUN pip install uv
 
 COPY pyproject.toml uv.lock* ./
 
-COPY . ./server
+ENV UV_HTTP_TIMEOUT=300
 
 RUN uv sync --frozen --no-dev
+
+ENV PATH="/code/.venv/bin:$PATH"
+
+RUN python -m nltk.downloader stopwords punkt_tab
+
+COPY . ./server

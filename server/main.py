@@ -1,5 +1,7 @@
 import os
-import nltk
+import glob
+import shutil
+import tempfile
 import structlog
 import uvicorn
 import redis.asyncio as redis
@@ -23,16 +25,17 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    nltk.download("stopwords")
     app.state.cachedb = redis.Redis(
         host="redis",
         port=SETTINGS.REDIS_PORT,
         decode_responses=True,
         password=SETTINGS.REDIS_PASSWORD,
     )
-    app.state.generator = NLPFactory.create_generator(
-        provider=SETTINGS.PROVIDER_GENERATOR
-    )
+    app.state.generators = {
+        "gemini": NLPFactory.create_generator(provider="gemini"),
+        "openai": NLPFactory.create_generator(provider="openai"),
+        "ollama": NLPFactory.create_generator(provider="ollama"),
+    }
     app.state.embeddings = NLPFactory.create_embeddings(
         provider=SETTINGS.PROVIDER_EMBEDDINGS
     )
@@ -45,12 +48,6 @@ async def lifespan(app: FastAPI):
     vectordb.connect()
     app.state.vectordb = vectordb
 
-    app.state.lexical_search = LexicalSearch(
-        api_key=SETTINGS.PINECONE_API_KEY,
-        host=SETTINGS.PINECONE_HOST_SPARSE,
-        model_path=SETTINGS.PROB_MODEL_FILE,
-    )
-
     app.state.lexical_trainer = LexicalTrainer(
         api_key=SETTINGS.PINECONE_API_KEY, host=SETTINGS.PINECONE_HOST_SPARSE
     )
@@ -61,7 +58,18 @@ async def lifespan(app: FastAPI):
     vectordb.disconnect()
     await app.state.cachedb.flushdb()
     await app.state.cachedb.close()
-    LOGGER.info("APP shut down success")
+    temp_base = tempfile.gettempdir()
+    pattern = os.path.join(temp_base, "onyx_task_*")
+    cleaned_count = 0
+    for temp_dir in glob.glob(pattern):
+        try:
+            shutil.rmtree(temp_dir)
+            cleaned_count += 1
+            LOGGER.info(f"Shutdown: cleaned {temp_dir}")
+        except Exception as e:
+            LOGGER.error(f"Shutdown: failed {temp_dir}: {e}")
+
+    LOGGER.info(f"APP shutdown success. Cleaned {cleaned_count} temp dirs.")
 
 
 app = FastAPI(
@@ -83,4 +91,11 @@ app.include_router(api_router_v1, prefix="/api/v1")
 
 if __name__ == "__main__":
     port = int(os.environ.get("APP_PORT", 8000))
-    uvicorn.run(app, host="0.0.0.0", port=port)
+    uvicorn.run(
+        app,
+        host="0.0.0.0",
+        port=port,
+        log_config=None,
+        log_level="critical",
+        access_log=False,
+    )

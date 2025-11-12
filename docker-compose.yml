@@ -3,27 +3,29 @@ services:
     build: ./server
     container_name: onyx-ix-guide-api
     volumes:
+      - ./server/models:/code/server/models
+      - ./logs:/logs
       - temp-audio-data:/server/temp_audio
     restart: unless-stopped
     command: uv run python -m server.main
     env_file:
       - ./server/.env
+    environment:
+      - OLLAMA_BASE_URL=http://host.docker.internal:11434/v1
     depends_on:
       - redis
-
   nginx:
-    build:
-      context: .
-      dockerfile: ./nginx/Dockerfile
+    image: nginx:alpine
     container_name: onyx-ix-engine
     restart: unless-stopped
     ports:
       - "80:80"
     volumes:
+      - ./frontend:/usr/share/nginx/html
+      - ./nginx.conf:/etc/nginx/conf.d/default.conf:ro
       - temp-audio-data:/usr/share/nginx/html/temp-audio
     depends_on:
       - fastapi
-
   redis:
     image: redis:7-alpine
     container_name: onyx-ix-guide-redis
@@ -31,7 +33,6 @@ services:
     volumes:
       - redis-data:/data
     command: redis-server --requirepass 36951
-
 volumes:
   redis-data:
   temp-audio-data:
