@@ -267,3 +267,46 @@ select#provider {
 .bot-message del {
     text-decoration: line-through;
 }
+
+/* Media Queries for Mobile Responsiveness */
+@media (max-width: 767px) {
+    body {
+        font-size: 14px;
+        /* Slightly smaller base font for mobile */
+    }
+
+    #chat-container {
+        padding: 1rem;
+        /* Reduced padding */
+        background-size: 4rem 2rem;
+        /* Smaller grid for mobile */
+    }
+
+    .bot-message p,
+    .bot-message ul,
+    .bot-message ol,
+    .bot-message blockquote {
+        margin-bottom: 0.75em;
+    }
+
+    .bot-message pre {
+        padding: 0.75em;
+    }
+
+    .bot-message h1 {
+        font-size: 1.3em;
+    }
+
+    .bot-message h2 {
+        font-size: 1.2em;
+    }
+
+    .bot-message h3 {
+        font-size: 1.1em;
+    }
+
+    /* Custom Scrollbar thinner on mobile */
+    #chat-container::-webkit-scrollbar {
+        width: 4px;
+    }
+}

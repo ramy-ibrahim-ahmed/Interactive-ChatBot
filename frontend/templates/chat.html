@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="ar" dir="ltr">
+<html lang="ar" dir="rtl">
 
 <head>
     <meta charset="UTF-8">
@@ -21,11 +21,11 @@
         </filter>
     </svg>
 
-    <div dir="ltr" class="bg-white w-full h-full flex flex-col md:flex-row overflow-hidden">
+    <div dir="rtl" class="bg-white w-full h-full flex flex-col md:flex-row overflow-hidden">
 
         <div
-            class="w-full md:w-1/3 bg-slate-800 flex flex-col items-center justify-center p-8 border-b-4 border-slate-700 md:border-r-4 md:border-b-0">
-            <div class="w-48 h-48 md:w-64 md:h-64">
+            class="w-full md:w-1/3 bg-slate-800 flex flex-col items-center justify-center p-4 sm:p-6 md:p-8 border-b-4 border-slate-700 md:border-r-4 md:border-b-0">
+            <div class="w-32 h-32 sm:w-48 sm:h-48 md:w-64 md:h-64">
                 <svg id="persona-svg" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
                     <path id="head" fill="#475569"
                         d="M 50,25 C 25,25 25,50 25,75 L 25,125 C 25,150 25,175 50,175 L 150,175 C 175,175 175,150 175,125 L 175,75 C 175,50 175,25 150,25 Z" />
@@ -44,33 +44,33 @@
                 </svg>
             </div>
             <div class="text-center mt-4">
-                <h2 id="persona-name" class="text-2xl font-bold text-white">برهوما</h2>
-                <p id="persona-status" class="text-emerald-400 font-medium">متصل</p>
+                <h2 id="persona-name" class="text-xl sm:text-2xl font-bold text-white">برهوما</h2>
+                <p id="persona-status" class="text-emerald-400 font-medium text-sm md:text-base">متصل</p>
             </div>
         </div>
 
         <div class="w-full md:w-2/3 flex flex-col h-full">
-            <div class="flex-1 p-6 overflow-y-auto space-y-4" id="chat-container">
+            <div class="flex-1 p-2 sm:p-4 md:p-6 overflow-y-auto space-y-4" id="chat-container">
             </div>
-            <div class="p-4 bg-white border-t border-slate-200">
-                <form id="chat-form" class="flex items-end space-x-3">
+            <div class="p-2 sm:p-3 md:p-4 bg-white border-t border-slate-200">
+                <form id="chat-form" class="flex items-end space-x-2 sm:space-x-3">
                     <div class="relative flex-1">
-                        <textarea id="chat-input" rows="3" placeholder="اكتب سؤالك هنا..."
-                            class="w-full flex-1 p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none transition resize-none text-right bg-white"
+                        <textarea id="chat-input" rows="2" sm:rows="3" placeholder="اكتب سؤالك هنا..."
+                            class="w-full flex-1 p-2 sm:p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none transition resize-none text-right bg-white text-sm md:text-base"
                             dir="rtl" autocomplete="off"></textarea>
-                        <div class="absolute top-2 left-2">
+                        <div class="absolute top-2 left-2 sm:left-3">
                             <div class="relative inline-block">
                                 <button id="provider-button"
-                                    class="bg-transparent border border-blue-300 text-blue-300 px-2 py-1 rounded-lg text-xs font-normal hover:bg-blue-50 hover:border-blue-400 hover:text-blue-400 transition-colors min-w-[80px]"
+                                    class="bg-transparent border border-blue-300 text-blue-300 px-1 sm:px-2 py-0.5 sm:py-1 rounded-lg text-xs font-normal hover:bg-blue-50 hover:border-blue-400 hover:text-blue-400 transition-colors min-w-[60px] sm:min-w-[80px]"
                                     style="filter: url(#sketchy);">Gemini</button>
                                 <ul id="provider-menu"
-                                    class="absolute bottom-full left-0 mb-1 hidden bg-white border border-blue-300 rounded-lg shadow-lg min-w-[80px] z-10 overflow-hidden"
+                                    class="absolute bottom-full left-0 mb-1 hidden bg-white border border-blue-300 rounded-lg shadow-lg min-w-[60px] sm:min-w-[80px] z-10 overflow-hidden"
                                     style="filter: url(#sketchy);">
-                                    <li class="px-2 py-1 hover:bg-blue-50 cursor-pointer text-blue-300 text-xs font-normal"
+                                    <li class="px-1 sm:px-2 py-0.5 sm:py-1 hover:bg-blue-50 cursor-pointer text-blue-300 text-xs font-normal"
                                         data-value="gemini">Gemini</li>
-                                    <li class="px-2 py-1 hover:bg-blue-50 cursor-pointer text-blue-300 text-xs font-normal"
+                                    <li class="px-1 sm:px-2 py-0.5 sm:py-1 hover:bg-blue-50 cursor-pointer text-blue-300 text-xs font-normal"
                                         data-value="openai">OpenAI</li>
-                                    <li class="px-2 py-1 hover:bg-blue-50 cursor-pointer text-blue-300 text-xs font-normal"
+                                    <li class="px-1 sm:px-2 py-0.5 sm:py-1 hover:bg-blue-50 cursor-pointer text-blue-300 text-xs font-normal"
                                         data-value="ollama">Ollama</li>
                                 </ul>
                             </div>
@@ -78,10 +78,11 @@
                     </div>
 
                     <button type="button" id="mic-button"
-                        class="bg-transparent border-2 border-green-500 hover:bg-green-100 hover:border-green-700 hover:text-green-700 text-green-500 font-bold p-3 rounded-full shadow-lg transition-all duration-200 ease-in-out active:scale-95 flex items-center justify-center w-12 h-12"
+                        class="bg-transparent border-2 border-green-500 hover:bg-green-100 hover:border-green-700 hover:text-green-700 text-green-500 font-bold p-2 sm:p-3 rounded-full shadow-lg transition-all duration-200 ease-in-out active:scale-95 flex items-center justify-center w-10 h-10 sm:w-12 sm:h-12"
                         style="filter: url(#sketchy);">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
-                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" sm:width="24" height="20" sm:height="24"
+                            viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                            stroke-linecap="round" stroke-linejoin="round">
                             <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"></path>
                             <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
                             <line x1="12" x2="12" y1="19" y2="22"></line>
@@ -89,11 +90,11 @@
                     </button>
 
                     <button type="submit" id="send-button"
-                        class="bg-transparent border-2 border-blue-500 hover:bg-blue-100 hover:border-blue-700 hover:text-blue-700 text-blue-500 font-bold p-3 rounded-lg transition-transform duration-200 ease-in-out active:scale-95 flex items-center justify-center w-12 h-12"
+                        class="bg-transparent border-2 border-blue-500 hover:bg-blue-100 hover:border-blue-700 hover:text-blue-700 text-blue-500 font-bold p-2 sm:p-3 rounded-lg transition-transform duration-200 ease-in-out active:scale-95 flex items-center justify-center w-10 h-10 sm:w-12 sm:h-12"
                         style="filter: url(#sketchy);">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
-                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-                            class="feather feather-send">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" sm:width="24" height="20" sm:height="24"
+                            viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                            stroke-linecap="round" stroke-linejoin="round" class="feather feather-send">
                             <line x1="22" y1="2" x2="11" y2="13"></line>
                             <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
                         </svg>

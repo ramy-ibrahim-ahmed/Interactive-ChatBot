@@ -15,3 +15,5 @@ ENV PATH="/code/.venv/bin:$PATH"
 RUN python -m nltk.downloader stopwords punkt_tab
 
 COPY . ./server
+
+CMD ["uv", "run", "uvicorn", "server.main:app", "--host", "0.0.0.0", "--port", "8080"]

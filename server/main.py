@@ -25,16 +25,19 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    import os
+
+    # ...
     app.state.cachedb = redis.Redis(
-        host="redis",
-        port=SETTINGS.REDIS_PORT,
+        host=os.getenv("REDIS_HOST", "localhost"),
+        port=int(os.getenv("REDIS_PORT", "6379")),
         decode_responses=True,
-        password=SETTINGS.REDIS_PASSWORD,
+        password=None,
     )
     app.state.generators = {
         "gemini": NLPFactory.create_generator(provider="gemini"),
         "openai": NLPFactory.create_generator(provider="openai"),
-        "ollama": NLPFactory.create_generator(provider="ollama"),
+        # "ollama": NLPFactory.create_generator(provider="ollama"),
     }
     app.state.embeddings = NLPFactory.create_embeddings(
         provider=SETTINGS.PROVIDER_EMBEDDINGS
@@ -88,14 +91,3 @@ app.add_middleware(
 )
 
 app.include_router(api_router_v1, prefix="/api/v1")
-
-if __name__ == "__main__":
-    port = int(os.environ.get("APP_PORT", 8000))
-    uvicorn.run(
-        app,
-        host="0.0.0.0",
-        port=port,
-        log_config=None,
-        log_level="critical",
-        access_log=False,
-    )
